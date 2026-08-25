@@ -557,4 +557,4 @@ function AdminLayout() {
 }
 
 
-export default AdminLayoutn
+export default AdminLayout
