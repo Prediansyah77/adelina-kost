@@ -106,14 +106,24 @@ const Payments = () => {
 
 
     // =====================================================
-    // FILTER
+    // FILTER PERIODE DEFAULT = BULAN + TAHUN REAL-TIME
     // =====================================================
 
+    const now = new Date();
+
+    const currentMonth = String(
+        now.getMonth() + 1
+    );
+
+    const currentYear = String(
+        now.getFullYear()
+    );
+
     const [filterMonth, setFilterMonth] =
-        useState("");
+        useState(currentMonth);
 
     const [filterYear, setFilterYear] =
-        useState("");
+        useState(currentYear);
 
 
     // =====================================================
@@ -1321,9 +1331,9 @@ const Payments = () => {
 
         setSearch("");
 
-        setFilterMonth("");
+        setFilterMonth(currentMonth);
 
-        setFilterYear("");
+        setFilterYear(currentYear);
 
         setCurrentPage(1);
 
@@ -3444,12 +3454,13 @@ const Payments = () => {
                             </option>
 
                             {[
-                                ...new Set(
-                                    payments.map(
+                                ...new Set([
+                                    currentYear,
+                                    ...payments.map(
                                         payment =>
                                             payment.billing_year
                                     )
-                                )
+                                ])
                             ]
                                 .sort(
                                     (a, b) =>

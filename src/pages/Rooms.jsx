@@ -1677,336 +1677,327 @@ function Rooms() {
 
             {isModalOpen && (
 
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm">
 
-                    <div className="max-h-[92vh] w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                    {/* MODAL WRAPPER */}
+                    <div className="flex h-full w-full items-start justify-center overflow-y-auto px-4 py-8 sm:py-10">
 
+                        {/* MODAL */}
+                        <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
-                        {/* =================================================
-                            MODAL HEADER
-                        ================================================= */}
+                            {/* =================================================
+                    MODAL HEADER
+                ================================================= */}
 
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+                            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
 
-                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3">
 
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
 
-                                    {editingRoom
-                                        ? <Pencil size={19} />
-                                        : <Plus size={20} />
-                                    }
+                                        {editingRoom
+                                            ? <Pencil size={19} />
+                                            : <Plus size={20} />
+                                        }
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2 className="text-lg font-bold text-slate-800">
+
+                                            {editingRoom
+                                                ? 'Edit Kamar'
+                                                : 'Tambah Kamar'
+                                            }
+
+                                        </h2>
+
+                                        <p className="mt-0.5 text-xs text-slate-500">
+
+                                            {editingRoom
+                                                ? 'Perbarui informasi kamar'
+                                                : 'Tambahkan kamar baru ke ADELINA KOST'
+                                            }
+
+                                        </p>
+
+                                    </div>
 
                                 </div>
 
+                                <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    disabled={saving}
+                                    className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
 
-                                <div>
+                                    <X size={20} />
 
-                                    <h2 className="text-lg font-bold text-slate-800">
-
-                                        {editingRoom
-                                            ? 'Edit Kamar'
-                                            : 'Tambah Kamar'}
-
-                                    </h2>
-
-
-                                    <p className="mt-0.5 text-xs text-slate-500">
-
-                                        {editingRoom
-                                            ? 'Perbarui informasi kamar'
-                                            : 'Tambahkan kamar baru ke ADELINA KOST'}
-
-                                    </p>
-
-                                </div>
+                                </button>
 
                             </div>
 
 
-                            <button
-                                type="button"
-                                onClick={closeModal}
-                                disabled={saving}
-                                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
+                            {/* =================================================
+                    MODAL CONTENT
+                ================================================= */}
 
-                                <X size={20} />
+                            <div className="max-h-[calc(100vh-150px)] overflow-y-auto">
 
-                            </button>
-
-                        </div>
+                                <form
+                                    onSubmit={handleSubmit}
+                                    className="space-y-5 p-6"
+                                >
 
 
-                        {/* =================================================
-                            MODAL CONTENT
+                                    {/* =================================================
+                            NOMOR KAMAR
                         ================================================= */}
 
-                        <div className="max-h-[calc(92vh-86px)] overflow-y-auto">
+                                    <div>
 
-                            <form
-                                onSubmit={handleSubmit}
-                                className="space-y-5 p-6"
-                            >
+                                        <label className="mb-2 block text-sm font-semibold text-slate-700">
 
+                                            Nomor Kamar
 
-                                {/* =================================================
-                                    NOMOR KAMAR
-                                ================================================= */}
+                                        </label>
 
-                                <div>
+                                        <div className="relative">
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                            <BedDouble
+                                                size={17}
+                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                                            />
 
-                                        Nomor Kamar
+                                            <input
+                                                type="text"
+                                                name="roomNumber"
+                                                value={
+                                                    formData.roomNumber
+                                                }
+                                                onChange={
+                                                    handleChange
+                                                }
+                                                placeholder="Contoh: 1"
+                                                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                                            />
 
-                                    </label>
-
-
-                                    <div className="relative">
-
-                                        <BedDouble
-                                            size={17}
-                                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                                        />
-
-
-                                        <input
-                                            type="text"
-                                            name="roomNumber"
-                                            value={
-                                                formData.roomNumber
-                                            }
-                                            onChange={
-                                                handleChange
-                                            }
-                                            placeholder="Contoh: 1"
-                                            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                                        />
+                                        </div>
 
                                     </div>
 
-                                </div>
 
+                                    {/* =================================================
+                            BUILDING
+                        ================================================= */}
 
-                                {/* =================================================
-                                    BUILDING
-                                ================================================= */}
+                                    <div>
 
-                                <div>
+                                        <label className="mb-2 block text-sm font-semibold text-slate-700">
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                            Bangunan
 
-                                        Bangunan
+                                        </label>
 
-                                    </label>
+                                        <div className="relative">
 
+                                            <Building2
+                                                size={17}
+                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                                            />
 
-                                    <div className="relative">
+                                            <select
+                                                name="buildingId"
+                                                value={
+                                                    formData.buildingId
+                                                }
+                                                onChange={
+                                                    handleChange
+                                                }
+                                                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                                            >
 
-                                        <Building2
-                                            size={17}
-                                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                                        />
+                                                <option value="">
+                                                    Pilih Bangunan
+                                                </option>
 
-
-                                        <select
-                                            name="buildingId"
-                                            value={
-                                                formData.buildingId
-                                            }
-                                            onChange={
-                                                handleChange
-                                            }
-                                            className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                                        >
-
-                                            <option value="">
-                                                Pilih Bangunan
-                                            </option>
-
-                                            {buildings
-                                                .filter(
-                                                    (building) =>
-                                                        building.status ===
-                                                        'AKTIF'
-                                                )
-                                                .map(
-                                                    (building) => (
-
-                                                        <option
-                                                            key={
-                                                                building.id
-                                                            }
-                                                            value={
-                                                                building.id
-                                                            }
-                                                        >
-
-                                                            {
-                                                                building.name
-                                                            }
-
-                                                        </option>
-
+                                                {buildings
+                                                    .filter(
+                                                        (building) =>
+                                                            building.status ===
+                                                            'AKTIF'
                                                     )
-                                                )}
+                                                    .map(
+                                                        (building) => (
 
-                                        </select>
+                                                            <option
+                                                                key={
+                                                                    building.id
+                                                                }
+                                                                value={
+                                                                    building.id
+                                                                }
+                                                            >
 
-                                    </div>
+                                                                {
+                                                                    building.name
+                                                                }
 
-                                </div>
+                                                            </option>
 
-
-                                {/* =================================================
-                                    FLOOR
-                                ================================================= */}
-
-                                <div>
-
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
-
-                                        Lantai
-
-                                    </label>
-
-
-                                    <div className="relative">
-
-                                        <Layers3
-                                            size={17}
-                                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                                        />
-
-
-                                        <select
-                                            name="floorId"
-                                            value={
-                                                formData.floorId
-                                            }
-                                            onChange={
-                                                handleChange
-                                            }
-                                            className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                                        >
-
-                                            <option value="">
-                                                Tidak menggunakan lantai
-                                            </option>
-
-                                            {floors
-                                                .filter(
-                                                    (floor) =>
-
-                                                        floor.status ===
-                                                        'AKTIF' &&
-
-                                                        (
-                                                            !formData.buildingId ||
-
-                                                            Number(
-                                                                floor.buildingId
-                                                            ) ===
-                                                            Number(
-                                                                formData.buildingId
-                                                            )
                                                         )
-                                                )
-                                                .map(
-                                                    (floor) => (
+                                                    )}
 
-                                                        <option
-                                                            key={
-                                                                floor.id
-                                                            }
-                                                            value={
-                                                                floor.id
-                                                            }
-                                                        >
+                                            </select>
 
-                                                            {
-                                                                floor.name
-                                                            }
+                                        </div>
 
-                                                        </option>
+                                    </div>
 
+
+                                    {/* =================================================
+                            FLOOR
+                        ================================================= */}
+
+                                    <div>
+
+                                        <label className="mb-2 block text-sm font-semibold text-slate-700">
+
+                                            Lantai
+
+                                        </label>
+
+                                        <div className="relative">
+
+                                            <Layers3
+                                                size={17}
+                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                                            />
+
+                                            <select
+                                                name="floorId"
+                                                value={
+                                                    formData.floorId
+                                                }
+                                                onChange={
+                                                    handleChange
+                                                }
+                                                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                                            >
+
+                                                <option value="">
+                                                    Tidak menggunakan lantai
+                                                </option>
+
+                                                {floors
+                                                    .filter(
+                                                        (floor) =>
+
+                                                            floor.status ===
+                                                            'AKTIF' &&
+
+                                                            (
+                                                                !formData.buildingId ||
+
+                                                                Number(
+                                                                    floor.buildingId
+                                                                ) ===
+                                                                Number(
+                                                                    formData.buildingId
+                                                                )
+                                                            )
                                                     )
-                                                )}
+                                                    .map(
+                                                        (floor) => (
 
-                                        </select>
+                                                            <option
+                                                                key={
+                                                                    floor.id
+                                                                }
+                                                                value={
+                                                                    floor.id
+                                                                }
+                                                            >
+
+                                                                {
+                                                                    floor.name
+                                                                }
+
+                                                            </option>
+
+                                                        )
+                                                    )}
+
+                                            </select>
+
+                                        </div>
+
+                                        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
+
+                                            <MapPin size={12} />
+
+                                            Lantai akan menyesuaikan bangunan.
+
+                                        </p>
+
+                                    </div>
+
+
+                                    {/* =================================================
+                            PRICE
+                        ================================================= */}
+
+                                    <div>
+
+                                        <label className="mb-2 block text-sm font-semibold text-slate-700">
+
+                                            Harga Sewa / Bulan
+
+                                        </label>
+
+                                        <div className="relative">
+
+                                            <Wallet
+                                                size={17}
+                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                                            />
+
+                                            <input
+                                                type="number"
+                                                name="rentPrice"
+                                                value={
+                                                    formData.rentPrice
+                                                }
+                                                onChange={
+                                                    handleChange
+                                                }
+                                                min="1"
+                                                placeholder="700000"
+                                                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                                            />
+
+                                        </div>
 
                                     </div>
 
 
-                                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
+                                    {/* =================================================
+                            STATUS
+                        ================================================= */}
 
-                                        <MapPin size={12} />
+                                    <div>
 
-                                        Lantai akan menyesuaikan bangunan.
+                                        <label className="mb-2 block text-sm font-semibold text-slate-700">
 
-                                    </p>
+                                            Status
 
-                                </div>
-
-
-                                {/* =================================================
-                                    PRICE
-                                ================================================= */}
-
-                                <div>
-
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
-
-                                        Harga Sewa / Bulan
-
-                                    </label>
+                                        </label>
 
 
-                                    <div className="relative">
-
-                                        <Wallet
-                                            size={17}
-                                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                                        />
-
-
-                                        <input
-                                            type="number"
-                                            name="rentPrice"
-                                            value={
-                                                formData.rentPrice
-                                            }
-                                            onChange={
-                                                handleChange
-                                            }
-                                            min="1"
-                                            placeholder="700000"
-                                            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                                        />
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* =================================================
-                                    STATUS
-                                ================================================= */}
-
-                                <div>
-
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
-
-                                        Status
-
-                                    </label>
-
-
-                                    {editingRoom?.status ===
-                                        'TERISI' ? (
-
-                                        <>
+                                        {editingRoom?.status ===
+                                            'TERISI' ? (
 
                                             <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
 
@@ -2016,155 +2007,156 @@ function Rooms() {
 
                                                 </div>
 
-
                                                 <div>
 
                                                     <p className="text-sm font-semibold text-blue-700">
+
                                                         Kamar Terisi
+
                                                     </p>
 
                                                     <p className="text-xs text-blue-600/70">
+
                                                         Status dikelola melalui kontrak penghuni.
+
                                                     </p>
 
                                                 </div>
 
                                             </div>
 
-                                        </>
+                                        ) : (
 
-                                    ) : (
+                                            <div className="relative">
+
+                                                <CheckCircle2
+                                                    size={17}
+                                                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                                                />
+
+                                                <select
+                                                    name="status"
+                                                    value={
+                                                        formData.status
+                                                    }
+                                                    onChange={
+                                                        handleChange
+                                                    }
+                                                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                                                >
+
+                                                    <option value="TERSEDIA">
+                                                        TERSEDIA
+                                                    </option>
+
+                                                    <option value="NONAKTIF">
+                                                        NONAKTIF
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+                                        )}
+
+                                    </div>
+
+
+                                    {/* =================================================
+                            NOTES
+                        ================================================= */}
+
+                                    <div>
+
+                                        <label className="mb-2 block text-sm font-semibold text-slate-700">
+
+                                            Catatan
+
+                                        </label>
 
                                         <div className="relative">
 
-                                            <CheckCircle2
+                                            <FileText
                                                 size={17}
-                                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                                                className="absolute left-3.5 top-3.5 text-slate-400"
                                             />
 
-
-                                            <select
-                                                name="status"
+                                            <textarea
+                                                name="notes"
                                                 value={
-                                                    formData.status
+                                                    formData.notes
                                                 }
                                                 onChange={
                                                     handleChange
                                                 }
-                                                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                                            >
-
-                                                <option value="TERSEDIA">
-                                                    TERSEDIA
-                                                </option>
-
-                                                <option value="NONAKTIF">
-                                                    NONAKTIF
-                                                </option>
-
-                                            </select>
+                                                rows="3"
+                                                placeholder="Tambahkan catatan kamar jika diperlukan..."
+                                                className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                                            />
 
                                         </div>
 
-                                    )}
-
-                                </div>
+                                    </div>
 
 
-                                {/* =================================================
-                                    NOTES
-                                ================================================= */}
+                                    {/* =================================================
+                            BUTTON
+                        ================================================= */}
 
-                                <div>
+                                    <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
 
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                        <button
+                                            type="button"
+                                            onClick={closeModal}
+                                            disabled={saving}
+                                            className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
 
-                                        Catatan
+                                            Batal
 
-                                    </label>
+                                        </button>
 
+                                        <button
+                                            type="submit"
+                                            disabled={saving}
+                                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
 
-                                    <div className="relative">
+                                            {saving ? (
 
-                                        <FileText
-                                            size={17}
-                                            className="absolute left-3.5 top-3.5 text-slate-400"
-                                        />
+                                                <>
 
+                                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
 
-                                        <textarea
-                                            name="notes"
-                                            value={
-                                                formData.notes
-                                            }
-                                            onChange={
-                                                handleChange
-                                            }
-                                            rows="3"
-                                            placeholder="Tambahkan catatan kamar jika diperlukan..."
-                                            className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                                        />
+                                                    Menyimpan...
+
+                                                </>
+
+                                            ) : (
+
+                                                <>
+
+                                                    {editingRoom
+                                                        ? <Pencil size={16} />
+                                                        : <Plus size={16} />
+                                                    }
+
+                                                    {editingRoom
+                                                        ? 'Simpan Perubahan'
+                                                        : 'Tambah Kamar'
+                                                    }
+
+                                                </>
+
+                                            )}
+
+                                        </button>
 
                                     </div>
 
-                                </div>
+                                </form>
 
-
-                                {/* =================================================
-                                    BUTTON
-                                ================================================= */}
-
-                                <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
-
-                                    <button
-                                        type="button"
-                                        onClick={closeModal}
-                                        disabled={saving}
-                                        className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-
-                                        Batal
-
-                                    </button>
-
-
-                                    <button
-                                        type="submit"
-                                        disabled={saving}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-                                    >
-
-                                        {saving ? (
-
-                                            <>
-                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-
-                                                Menyimpan...
-
-                                            </>
-
-                                        ) : (
-
-                                            <>
-                                                {editingRoom
-                                                    ? <Pencil size={16} />
-                                                    : <Plus size={16} />
-                                                }
-
-                                                {editingRoom
-                                                    ? 'Simpan Perubahan'
-                                                    : 'Tambah Kamar'
-                                                }
-
-                                            </>
-
-                                        )}
-
-                                    </button>
-
-                                </div>
-
-                            </form>
+                            </div>
 
                         </div>
 
@@ -2173,7 +2165,6 @@ function Rooms() {
                 </div>
 
             )}
-
         </div>
 
     )
