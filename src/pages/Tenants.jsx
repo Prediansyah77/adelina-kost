@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import api from "../services/api";
 
 import {
     Search,
@@ -27,6 +28,12 @@ import {
     deleteTenant,
 } from '../services/tenantService'
 
+import {
+    getKtp,
+    uploadKtp,
+    deleteKtp
+} from "../services/tenantDocumentService";
+
 import { getRooms } from '../services/roomService'
 import { getContracts } from '../services/contractService'
 
@@ -54,6 +61,15 @@ function Tenants() {
         useState(null)
 
     const [isDetailOpen, setIsDetailOpen] =
+        useState(false)
+
+    const [ktpDocument, setKtpDocument] =
+        useState(null)
+
+    const [isKtpPreviewOpen, setIsKtpPreviewOpen] =
+        useState(false)
+
+    const [isKtpLoading, setIsKtpLoading] =
         useState(false)
 
     const [isMoveOutOpen, setIsMoveOutOpen] =
@@ -164,6 +180,22 @@ function Tenants() {
         return []
 
     }
+
+    // =====================================================
+    // KTP
+    // =====================================================
+
+    const [ktpData, setKtpData] =
+        useState(null)
+
+    const [ktpLoading, setKtpLoading] =
+        useState(false)
+
+    const [ktpUploading, setKtpUploading] =
+        useState(false)
+
+    const [ktpFile, setKtpFile] =
+        useState(null)
 
 
     // =====================================================
@@ -862,23 +894,331 @@ function Tenants() {
 
     }
 
+    const fetchKtp = async (tenantId) => {
+
+        try {
+
+            setIsKtpLoading(true);
+
+            const response = await api.get(
+                `/tenant-documents/${tenantId}/ktp`
+            );
+
+            if (response.data.success) {
+
+                setKtpDocument(
+                    response.data.data
+                );
+
+            }
+
+        } catch (error) {
+
+            if (
+                error.response?.status === 404
+            ) {
+
+                setKtpDocument(null);
+
+            } else {
+
+                console.error(
+                    "Gagal mengambil KTP:",
+                    error
+                );
+
+                setKtpDocument(null);
+
+            }
+
+        } finally {
+
+            setIsKtpLoading(false);
+
+        }
+
+    };
+
 
     // =====================================================
     // OPEN DETAIL
     // =====================================================
 
-    function openDetailModal(
-        tenant
-    ) {
+    async function openDetailModal(tenant) {
 
-        setSelectedTenant(
-            tenant
-        )
+        setSelectedTenant(tenant)
 
         setIsDetailOpen(true)
 
+        // Reset KTP sebelumnya
+        setKtpDocument(null)
+
+        setIsKtpLoading(true)
+
+        try {
+
+            const response =
+                await getKtp(tenant.id)
+
+            if (
+                response?.success
+            ) {
+
+                setKtpDocument(
+                    response.data
+                )
+
+            }
+
+        } catch (error) {
+
+            // 404 = penghuni belum punya KTP
+            if (
+                error?.response?.status === 404
+            ) {
+
+                setKtpDocument(null)
+
+            } else {
+
+                console.error(
+                    "GET KTP ERROR:",
+                    error
+                )
+
+            }
+
+        } finally {
+
+            setIsKtpLoading(false)
+
+        }
+
     }
 
+
+    // ============================================================
+    // UPLOAD / GANTI KTP
+    // ============================================================
+
+    async function handleKtpUpload(event) {
+
+        const file =
+            event.target.files?.[0]
+
+        // Tidak ada file
+        if (!file) {
+            return
+        }
+
+        // Pastikan tenant sedang dipilih
+        if (!selectedTenant?.id) {
+
+            alert(
+                "Penghuni tidak ditemukan."
+            )
+
+            return
+        }
+
+
+        // ========================================================
+        // VALIDASI FORMAT
+        // ========================================================
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ]
+
+        if (
+            !allowedTypes.includes(
+                file.type
+            )
+        ) {
+
+            alert(
+                "Format KTP harus JPG, PNG, atau WEBP."
+            )
+
+            event.target.value = ""
+
+            return
+        }
+
+
+        // ========================================================
+        // VALIDASI UKURAN
+        // Maksimal 5 MB
+        // ========================================================
+
+        if (
+            file.size > 5 * 1024 * 1024
+        ) {
+
+            alert(
+                "Ukuran file KTP maksimal 5 MB."
+            )
+
+            event.target.value = ""
+
+            return
+        }
+
+
+        try {
+
+            setKtpUploading(true)
+
+
+            // ====================================================
+            // UPLOAD
+            // ====================================================
+
+            const response =
+                await uploadKtp(
+                    selectedTenant.id,
+                    file
+                )
+
+
+            if (
+                response?.success === false
+            ) {
+
+                throw new Error(
+                    response?.message ||
+                    "Gagal mengupload KTP."
+                )
+
+            }
+
+
+            // ====================================================
+            // AMBIL DATA KTP TERBARU
+            // ====================================================
+
+            await fetchKtp(
+                selectedTenant.id
+            )
+
+
+            alert(
+                response?.message ||
+                "KTP berhasil diupload."
+            )
+
+
+        } catch (error) {
+
+            console.error(
+                "UPLOAD KTP ERROR:",
+                error
+            )
+
+
+            alert(
+                error?.response?.data?.message ||
+                error?.message ||
+                "Gagal mengupload KTP."
+            )
+
+
+        } finally {
+
+            setKtpUploading(false)
+
+            // Reset input supaya file yang sama
+            // bisa dipilih kembali
+            event.target.value = ""
+
+        }
+
+    }
+
+
+    // ============================================================
+    // HAPUS KTP
+    // ============================================================
+
+    async function handleDeleteKtp() {
+
+        if (!selectedTenant?.id) {
+
+            alert(
+                "Penghuni tidak ditemukan."
+            )
+
+            return
+        }
+
+
+        const confirmed =
+            window.confirm(
+                "Yakin ingin menghapus KTP penghuni ini?"
+            )
+
+
+        if (!confirmed) {
+            return
+        }
+
+
+        try {
+
+            setIsKtpLoading(true)
+
+
+            const response =
+                await deleteKtp(
+                    selectedTenant.id
+                )
+
+
+            if (
+                response?.success === false
+            ) {
+
+                throw new Error(
+                    response?.message ||
+                    "Gagal menghapus KTP."
+                )
+
+            }
+
+
+            setKtpDocument(null)
+
+
+            alert(
+                response?.message ||
+                "KTP berhasil dihapus."
+            )
+
+
+        } catch (error) {
+
+            console.error(
+                "DELETE KTP ERROR:",
+                error
+            )
+
+
+            alert(
+                error?.response?.data?.message ||
+                error?.message ||
+                "Gagal menghapus KTP."
+            )
+
+
+        } finally {
+
+            setIsKtpLoading(false)
+
+        }
+
+    }
 
     // =====================================================
     // CLOSE DETAIL
@@ -2636,6 +2976,119 @@ function Tenants() {
 
                                             </div>
 
+                                            {/* KTP */}
+
+                                            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+
+                                                <div className="flex items-center justify-between">
+
+                                                    <div>
+
+                                                        <p className="text-sm font-semibold text-slate-800">
+                                                            Dokumen KTP
+                                                        </p>
+
+                                                        <p className="mt-1 text-xs text-slate-500">
+                                                            Kartu Tanda Penduduk penghuni
+                                                        </p>
+
+                                                    </div>
+
+                                                    <CreditCard
+                                                        size={20}
+                                                        className="text-blue-500"
+                                                    />
+
+                                                </div>
+
+
+                                                {/* ================================
+        INPUT FILE KTP
+    ================================= */}
+
+                                                <input
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,image/webp"
+                                                    id="ktp-upload"
+                                                    className="hidden"
+                                                    onChange={handleKtpUpload}
+                                                />
+
+
+                                                {isKtpLoading ? (
+
+                                                    <div className="mt-4 text-sm text-slate-500">
+                                                        Memuat dokumen KTP...
+                                                    </div>
+
+                                                ) : ktpDocument ? (
+
+                                                    <div className="mt-4">
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsKtpPreviewOpen(true)}
+                                                            className="mt-4 block w-full cursor-zoom-in overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+                                                        >
+                                                            <img
+                                                                src={`http://localhost:5000/${String(
+                                                                    ktpDocument.file_path
+                                                                ).replace(/^\/+/, '')}`}
+                                                                alt="KTP Penghuni"
+                                                                className="max-h-72 w-full object-contain transition hover:scale-[1.02]"
+                                                            />
+                                                        </button>
+
+
+                                                        <div className="mt-3 flex gap-2">
+
+                                                            <label
+                                                                htmlFor="ktp-upload"
+                                                                className="cursor-pointer rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                                                            >
+                                                                Ganti KTP
+                                                            </label>
+
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleDeleteKtp}
+                                                                className="rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                                                            >
+                                                                Hapus KTP
+                                                            </button>
+
+                                                        </div>
+
+
+                                                        <p className="mt-2 text-xs text-slate-400">
+
+                                                        </p>
+
+                                                    </div>
+
+                                                ) : (
+
+                                                    <div className="mt-4 rounded-xl bg-slate-50 p-4 text-center">
+
+                                                        <p className="text-sm text-slate-500">
+                                                            KTP belum diupload
+                                                        </p>
+
+
+                                                        <label
+                                                            htmlFor="ktp-upload"
+                                                            className="mt-3 inline-block cursor-pointer rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                                                        >
+                                                            Upload KTP
+                                                        </label>
+
+                                                    </div>
+
+                                                )}
+
+                                            </div>
+
 
                                             {/* CONTRACT */}
 
@@ -2721,6 +3174,280 @@ function Tenants() {
                     </ModalOverlay>
 
                 )}
+            {isKtpPreviewOpen && ktpDocument && (
+
+                <ModalOverlay>
+
+                    <div
+                        className="
+                relative
+                flex
+                h-[92vh]
+                w-[95vw]
+                max-w-6xl
+                flex-col
+                overflow-hidden
+                rounded-2xl
+                bg-slate-950
+                shadow-2xl
+            "
+                    >
+
+                        {/* ================================================= */}
+                        {/* HEADER */}
+                        {/* ================================================= */}
+
+                        <div
+                            className="
+                    flex
+                    shrink-0
+                    items-center
+                    justify-between
+                    border-b
+                    border-white/10
+                    bg-slate-900/95
+                    px-5
+                    py-4
+                    backdrop-blur
+                "
+                        >
+
+                            <div className="min-w-0">
+
+                                <p
+                                    className="
+                            text-sm
+                            font-semibold
+                            text-white
+                        "
+                                >
+                                    Dokumen KTP
+                                </p>
+
+                                <p
+                                    className="
+                            mt-0.5
+                            truncate
+                            text-xs
+                            text-slate-400
+                        "
+                                >
+                                    {selectedTenant?.name ||
+                                        "Dokumen identitas penghuni"}
+                                </p>
+
+                            </div>
+
+
+                            {/* CLOSE */}
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setIsKtpPreviewOpen(false)
+                                }
+                                aria-label="Tutup preview KTP"
+                                className="
+                        ml-4
+                        flex
+                        h-10
+                        w-10
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        text-slate-400
+                        transition
+                        hover:bg-white/10
+                        hover:text-white
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-white/20
+                    "
+                            >
+
+                                <X size={22} />
+
+                            </button>
+
+                        </div>
+
+
+                        {/* ================================================= */}
+                        {/* PREVIEW AREA */}
+                        {/* ================================================= */}
+
+                        <div
+                            className="
+                    relative
+                    flex
+                    min-h-0
+                    flex-1
+                    items-center
+                    justify-center
+                    overflow-auto
+                    bg-slate-950
+                    p-5
+                    sm:p-8
+                "
+                            onClick={() =>
+                                setIsKtpPreviewOpen(false)
+                            }
+                        >
+
+                            {/* Background decoration */}
+
+                            <div
+                                className="
+                        pointer-events-none
+                        absolute
+                        inset-0
+                        opacity-30
+                    "
+                            >
+
+                                <div
+                                    className="
+                            absolute
+                            left-1/2
+                            top-1/2
+                            h-96
+                            w-96
+                            -translate-x-1/2
+                            -translate-y-1/2
+                            rounded-full
+                            bg-blue-500/10
+                            blur-3xl
+                        "
+                                />
+
+                            </div>
+
+
+                            {/* DOCUMENT */}
+
+                            <div
+                                className="
+                        relative
+                        flex
+                        max-h-full
+                        max-w-full
+                        items-center
+                        justify-center
+                    "
+                            >
+
+                                <img
+                                    src={`http://localhost:5000/${String(
+                                        ktpDocument.file_path
+                                    ).replace(/^\/+/, '')}`}
+                                    alt="Preview KTP Penghuni"
+                                    className="
+                            max-h-[72vh]
+                            max-w-full
+                            rounded-xl
+                            object-contain
+                            shadow-2xl
+                            ring-1
+                            ring-white/10
+                            transition-transform
+                            duration-200
+                            hover:scale-[1.01]
+                        "
+                                    onClick={(event) =>
+                                        event.stopPropagation()
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* ================================================= */}
+                        {/* FOOTER */}
+                        {/* ================================================= */}
+
+                        <div
+                            className="
+                    flex
+                    shrink-0
+                    items-center
+                    justify-between
+                    gap-4
+                    border-t
+                    border-white/10
+                    bg-slate-900/95
+                    px-5
+                    py-3
+                    backdrop-blur
+                "
+                        >
+
+                            <div
+                                className="
+                        hidden
+                        items-center
+                        gap-2
+                        text-xs
+                        text-slate-400
+                        sm:flex
+                    "
+                            >
+
+                                <span
+                                    className="
+                            flex
+                            h-6
+                            w-6
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-white/5
+                        "
+                                >
+                                    <CreditCard size={13} />
+                                </span>
+
+                                <span>
+                                    Dokumen identitas penghuni
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setIsKtpPreviewOpen(false)
+                                }
+                                className="
+                        ml-auto
+                        rounded-xl
+                        bg-white
+                        px-5
+                        py-2.5
+                        text-sm
+                        font-semibold
+                        text-slate-800
+                        shadow-sm
+                        transition
+                        hover:bg-slate-100
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-white/30
+                    "
+                            >
+                                Tutup
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </ModalOverlay>
+
+            )}
 
 
             {/* =================================================

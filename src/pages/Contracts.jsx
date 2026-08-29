@@ -373,6 +373,50 @@ function Contracts() {
 
 
     // =====================================================
+    // KAMAR TERPILIH
+    // =====================================================
+
+    const selectedRoom = useMemo(() => {
+
+        return rooms.find(
+            (room) =>
+                Number(room.id) ===
+                Number(formData.room_id)
+        ) || null
+
+    }, [
+        rooms,
+        formData.room_id,
+    ])
+
+
+    // =====================================================
+    // HARGA KAMAR
+    //
+    // Harga kamar berasal dari field `price` pada tabel rooms.
+    // Saat tambah kontrak, harga otomatis disalin ke
+    // monthly_price sebagai harga historis kontrak.
+    // =====================================================
+
+    function getRoomPrice(room) {
+
+        if (!room) {
+            return ''
+        }
+
+        const price = Number(
+            room.price ??
+            room.rent_price ??
+            room.rentPrice ??
+            0
+        )
+
+        return price > 0 ? String(price) : ''
+
+    }
+
+
+    // =====================================================
     // =====================================================
 
     const sortedContracts = useMemo(() => {
@@ -589,6 +633,44 @@ function Contracts() {
             value,
         } = event.target
 
+
+        // =================================================
+        // PILIH KAMAR
+        // =================================================
+        //
+        // Saat membuat kontrak baru, harga otomatis
+        // mengikuti harga sewa kamar dari database.
+        //
+        // Saat edit kontrak, harga lama tetap dipertahankan
+        // agar harga historis kontrak tidak berubah hanya
+        // karena data kamar berubah.
+        // =================================================
+
+        if (
+            name === 'room_id' &&
+            !editingContract
+        ) {
+
+            const selectedRoom =
+                rooms.find(
+                    (room) =>
+                        Number(room.id) ===
+                        Number(value)
+                )
+
+            const roomPrice =
+                getRoomPrice(selectedRoom)
+
+            setFormData((previous) => ({
+                ...previous,
+                room_id: value,
+                monthly_price: roomPrice,
+            }))
+
+            return
+        }
+
+
         setFormData((previous) => ({
             ...previous,
             [name]: value,
@@ -651,7 +733,54 @@ function Contracts() {
         }
 
 
-        if (!formData.monthly_price) {
+        // =================================================
+        // HARGA OTOMATIS DARI KAMAR
+        // =================================================
+        //
+        // Untuk kontrak baru, harga selalu diambil dari
+        // harga kamar yang dipilih. Ini mencegah nilai harga
+        // yang tertinggal/stale di form.
+        // =================================================
+
+        let monthlyPrice =
+            Number(formData.monthly_price)
+
+
+        if (!editingContract) {
+
+            const selectedRoomForSubmit =
+                rooms.find(
+                    (room) =>
+                        Number(room.id) ===
+                        Number(formData.room_id)
+                )
+
+            monthlyPrice =
+                Number(
+                    getRoomPrice(
+                        selectedRoomForSubmit
+                    )
+                )
+
+            if (
+                !monthlyPrice ||
+                monthlyPrice <= 0
+            ) {
+
+                alert(
+                    'Harga kamar belum tersedia. Periksa harga sewa pada data kamar terlebih dahulu.'
+                )
+
+                return
+            }
+
+        }
+
+
+        if (
+            !monthlyPrice ||
+            monthlyPrice <= 0
+        ) {
 
             alert('Harga bulanan wajib diisi.')
 
@@ -696,9 +825,7 @@ function Contracts() {
                     formData.end_date || null,
 
                 monthly_price:
-                    Number(
-                        formData.monthly_price
-                    ),
+                    monthlyPrice,
 
                 status:
                     formData.status,
@@ -2531,9 +2658,19 @@ function Contracts() {
 
                                 <div>
 
-                                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                                        Harga Bulanan
-                                    </label>
+                                    <div className="mb-2 flex items-center justify-between gap-3">
+
+                                        <label className="block text-sm font-medium text-slate-700">
+                                            Harga Bulanan
+                                        </label>
+
+                                        {!editingContract && (
+                                            <span className="text-xs font-medium text-blue-600">
+                                                Otomatis dari kamar
+                                            </span>
+                                        )}
+
+                                    </div>
 
                                     <div className="relative">
 
@@ -2551,12 +2688,65 @@ function Contracts() {
                                             onChange={
                                                 handleChange
                                             }
-                                            placeholder="Contoh: 750000"
+                                            placeholder={
+                                                editingContract
+                                                    ? 'Masukkan harga bulanan'
+                                                    : 'Pilih kamar terlebih dahulu'
+                                            }
                                             min="0"
-                                            className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                            readOnly={
+                                                !editingContract
+                                            }
+                                            className={`w-full rounded-xl border border-slate-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${!editingContract
+                                                ? 'cursor-not-allowed bg-slate-50 text-slate-600'
+                                                : 'bg-white'
+                                                }`}
                                         />
 
                                     </div>
+
+
+                                    {/* INFO HARGA KAMAR */}
+
+                                    {!editingContract && (
+
+                                        <div className="mt-2 flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2.5">
+
+                                            <Wallet
+                                                size={14}
+                                                className="mt-0.5 shrink-0 text-blue-600"
+                                            />
+
+                                            <p className="text-xs leading-5 text-blue-700">
+
+                                                {selectedRoom
+                                                    ? getRoomPrice(selectedRoom)
+                                                        ? (
+                                                            <>
+                                                                Harga otomatis mengikuti harga sewa{' '}
+                                                                <span className="font-semibold">
+                                                                    Kamar {selectedRoom.room_number}
+                                                                </span>
+                                                                {' '}yaitu{' '}
+                                                                <span className="font-semibold">
+                                                                    {formatRupiah(
+                                                                        getRoomPrice(
+                                                                            selectedRoom
+                                                                        )
+                                                                    )}
+                                                                </span>
+                                                                {' '}per bulan.
+                                                            </>
+                                                        )
+                                                        : 'Kamar yang dipilih belum memiliki harga sewa.'
+                                                    : 'Pilih kamar untuk mengisi harga bulanan secara otomatis.'
+                                                }
+
+                                            </p>
+
+                                        </div>
+
+                                    )}
 
                                 </div>
 
