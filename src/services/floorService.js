@@ -1,6 +1,7 @@
-// src/services/roomService.js
+// src/services/floorService.js
 
-const API_URL = 'http://localhost:5000/api/rooms'
+
+const API_URL = 'http://localhost:5000/api/floors'
 
 
 // =====================================================
@@ -12,22 +13,26 @@ async function request(url, options = {}) {
     try {
 
         const response = await fetch(url, {
+
             headers: {
                 'Content-Type': 'application/json',
                 ...(options.headers || {}),
             },
+
             ...options,
+
         })
 
 
-        // Ambil response JSON
         const data = await response.json()
 
 
-        console.log('ROOM API RESPONSE:', data)
+        console.log(
+            'FLOOR API RESPONSE:',
+            data
+        )
 
 
-        // Jika HTTP error
         if (!response.ok) {
 
             throw new Error(
@@ -43,7 +48,7 @@ async function request(url, options = {}) {
     } catch (error) {
 
         console.error(
-            'ROOM SERVICE ERROR:',
+            'FLOOR SERVICE ERROR:',
             error
         )
 
@@ -55,13 +60,11 @@ async function request(url, options = {}) {
 
 
 // =====================================================
-// GET ALL ROOMS
-// GET /api/rooms
-// =====================================================
-// Digunakan oleh ADMIN
+// GET ALL FLOORS
+// GET /api/floors
 // =====================================================
 
-export async function getRooms() {
+export async function getFloors() {
 
     return await request(
         API_URL,
@@ -74,37 +77,11 @@ export async function getRooms() {
 
 
 // =====================================================
-// GET PUBLIC ROOMS
-// GET /api/rooms/public
-// =====================================================
-// Digunakan oleh USER / PENGUNJUNG
-//
-// Tidak membutuhkan login.
-// Hanya mengembalikan array data kamar
-// agar bisa digunakan langsung dengan rooms.map()
+// GET FLOOR BY ID
+// GET /api/floors/:id
 // =====================================================
 
-export async function getPublicRooms() {
-
-    const response = await request(
-        `${API_URL}/public`,
-        {
-            method: 'GET',
-        }
-    )
-
-
-    return response.data || []
-
-}
-
-
-// =====================================================
-// GET ROOM BY ID
-// GET /api/rooms/:id
-// =====================================================
-
-export async function getRoomById(id) {
+export async function getFloorById(id) {
 
     return await request(
         `${API_URL}/${id}`,
@@ -117,20 +94,20 @@ export async function getRoomById(id) {
 
 
 // =====================================================
-// CREATE ROOM
-// POST /api/rooms
-// =====================================================
-// Digunakan oleh ADMIN
+// CREATE FLOOR
+// POST /api/floors
 // =====================================================
 
-export async function createRoom(roomData) {
+export async function createFloor(floorData) {
 
     return await request(
         API_URL,
         {
             method: 'POST',
 
-            body: JSON.stringify(roomData),
+            body: JSON.stringify(
+                floorData
+            ),
         }
     )
 
@@ -138,20 +115,23 @@ export async function createRoom(roomData) {
 
 
 // =====================================================
-// UPDATE ROOM
-// PUT /api/rooms/:id
-// =====================================================
-// Digunakan oleh ADMIN
+// UPDATE FLOOR
+// PUT /api/floors/:id
 // =====================================================
 
-export async function updateRoom(id, roomData) {
+export async function updateFloor(
+    id,
+    floorData
+) {
 
     return await request(
         `${API_URL}/${id}`,
         {
             method: 'PUT',
 
-            body: JSON.stringify(roomData),
+            body: JSON.stringify(
+                floorData
+            ),
         }
     )
 
@@ -159,18 +139,16 @@ export async function updateRoom(id, roomData) {
 
 
 // =====================================================
-// DELETE ROOM
-// DELETE /api/rooms/:id
-// =====================================================
-// Digunakan oleh ADMIN
+// DEACTIVATE FLOOR
+// PATCH /api/floors/:id/nonaktifkan
 // =====================================================
 
-export async function deleteRoom(id) {
+export async function deactivateFloor(id) {
 
     return await request(
-        `${API_URL}/${id}`,
+        `${API_URL}/${id}/nonaktifkan`,
         {
-            method: 'DELETE',
+            method: 'PATCH',
         }
     )
 

@@ -350,19 +350,14 @@ function AdminLayout() {
     // =================================================
     // LOGOUT
     // =================================================
-
     const handleLogout = () => {
 
-        // Hapus JWT token
-        localStorage.removeItem('token')
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
 
-        // Hapus data user
-        localStorage.removeItem('user')
+        window.location.replace("/login");
 
-        // Arahkan ke halaman login
-        window.location.href = '/login'
-
-    }
+    };
 
 
     return (

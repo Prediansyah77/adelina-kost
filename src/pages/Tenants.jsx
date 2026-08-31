@@ -51,6 +51,26 @@ function Tenants() {
     const [tenantList, setTenantList] =
         useState([])
 
+    // =====================================================
+    // CALON PENGHUNI
+    // Data yang masuk dari tombol Register calon penghuni.
+    // =====================================================
+
+    const [candidateList, setCandidateList] =
+        useState([])
+
+    const [candidateLoading, setCandidateLoading] =
+        useState(false)
+
+    const [candidateDetail, setCandidateDetail] =
+        useState(null)
+
+    const [isCandidateDetailOpen, setIsCandidateDetailOpen] =
+        useState(false)
+
+    const [candidateDetailLoading, setCandidateDetailLoading] =
+        useState(false)
+
     const [roomList, setRoomList] =
         useState([])
 
@@ -116,6 +136,8 @@ function Tenants() {
         phone: '',
         address: '',
         identityNumber: '',
+        username: '',
+        password: '',
     }
 
 
@@ -242,6 +264,48 @@ function Tenants() {
 
 
     // =====================================================
+    // LOAD CALON PENGHUNI
+    // GET /api/tenants/calon
+    //
+    // Endpoint ini mengambil data yang dibuat saat calon
+    // penghuni melakukan Register.
+    // =====================================================
+
+    async function loadCandidates() {
+
+        try {
+
+            setCandidateLoading(true)
+
+            const response =
+                await api.get('/tenants/calon')
+
+            const candidates =
+                extractArray(response)
+
+            setCandidateList(candidates)
+
+        } catch (error) {
+
+            console.error(
+                'LOAD CALON PENGHUNI ERROR:',
+                error
+            )
+
+            // Jangan membuat halaman penghuni aktif
+            // ikut gagal jika endpoint calon bermasalah.
+            setCandidateList([])
+
+        } finally {
+
+            setCandidateLoading(false)
+
+        }
+
+    }
+
+
+    // =====================================================
     // LOAD SEMUA DATA
     // =====================================================
 
@@ -345,6 +409,10 @@ function Tenants() {
                 }
             )
 
+
+            // Calon penghuni dimuat terpisah supaya error pada
+            // endpoint calon tidak merusak tabel penghuni aktif.
+            await loadCandidates()
 
             return {
                 tenants,
@@ -1234,6 +1302,82 @@ function Tenants() {
 
 
     // =====================================================
+    // OPEN DETAIL CALON PENGHUNI
+    // GET /api/tenants/calon/:id
+    // =====================================================
+
+    async function openCandidateDetail(candidate) {
+
+        setCandidateDetail(null)
+        setSelectedTenant(candidate)
+        setIsCandidateDetailOpen(true)
+        setCandidateDetailLoading(true)
+        setKtpDocument(null)
+
+        try {
+
+            const response =
+                await api.get(
+                    `/tenants/calon/${candidate.id}`
+                )
+
+            if (!response?.data?.success) {
+                throw new Error(
+                    response?.data?.message ||
+                    'Gagal mengambil detail calon penghuni.'
+                )
+            }
+
+            const detail =
+                response.data.data
+
+            setCandidateDetail(detail)
+
+            // KTP dari endpoint detail calon langsung digunakan
+            // untuk ditampilkan di frontend admin.
+            setKtpDocument(
+                detail?.document || null
+            )
+
+        } catch (error) {
+
+            console.error(
+                'GET DETAIL CALON PENGHUNI ERROR:',
+                error
+            )
+
+            alert(
+                error?.response?.data?.message ||
+                error?.message ||
+                'Gagal mengambil detail calon penghuni.'
+            )
+
+            setIsCandidateDetailOpen(false)
+
+        } finally {
+
+            setCandidateDetailLoading(false)
+
+        }
+
+    }
+
+
+    // =====================================================
+    // CLOSE DETAIL CALON PENGHUNI
+    // =====================================================
+
+    function closeCandidateDetail() {
+
+        setIsCandidateDetailOpen(false)
+        setCandidateDetail(null)
+        setSelectedTenant(null)
+        setKtpDocument(null)
+
+    }
+
+
+    // =====================================================
     // OPEN MOVE OUT
     // =====================================================
 
@@ -1360,6 +1504,60 @@ function Tenants() {
         }
 
 
+        // -------------------------------------------------
+        // VALIDASI AKUN LOGIN
+        // Hanya saat menambah penghuni baru.
+        // Username/password tidak diubah dari form Edit.
+        // -------------------------------------------------
+
+        if (!editingTenant) {
+
+            if (!formData.username.trim()) {
+
+                alert(
+                    'Username wajib diisi.'
+                )
+
+                return
+
+            }
+
+
+            if (!formData.password.trim()) {
+
+                alert(
+                    'Password wajib diisi.'
+                )
+
+                return
+
+            }
+
+
+            if (formData.username.trim().length < 3) {
+
+                alert(
+                    'Username minimal 3 karakter.'
+                )
+
+                return
+
+            }
+
+
+            if (formData.password.length < 6) {
+
+                alert(
+                    'Password minimal 6 karakter.'
+                )
+
+                return
+
+            }
+
+        }
+
+
         try {
 
             setSaving(true)
@@ -1384,6 +1582,19 @@ function Tenants() {
                 identity_number:
                     formData.identityNumber.trim() ||
                     null,
+
+            }
+
+
+            // Username dan password hanya dikirim saat CREATE.
+            // Saat EDIT, kredensial login penghuni tidak disentuh.
+            if (!editingTenant) {
+
+                payload.username =
+                    formData.username.trim();
+
+                payload.password =
+                    formData.password;
 
             }
 
@@ -1958,6 +2169,192 @@ function Tenants() {
                     }
                     iconClass="bg-slate-100 text-slate-500"
                 />
+
+            </div>
+
+
+            {/* =================================================
+                CALON PENGHUNI
+            ================================================= */}
+
+            <div className="overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
+
+                <div className="border-b border-amber-100 bg-amber-50/60 px-5 py-4">
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                                    <UserRound size={18} />
+                                </div>
+
+                                <div>
+                                    <h2 className="font-semibold text-slate-800">
+                                        Calon Penghuni
+                                    </h2>
+
+                                    <p className="mt-0.5 text-xs text-slate-500">
+                                        Data yang didaftarkan melalui tombol Register
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                {candidateList.length} calon
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={loadCandidates}
+                                disabled={candidateLoading}
+                                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <RefreshCw
+                                    size={14}
+                                    className={candidateLoading ? 'animate-spin' : ''}
+                                />
+                                Refresh
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {candidateLoading ? (
+
+                    <div className="flex min-h-[180px] items-center justify-center">
+                        <div className="text-center">
+                            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-amber-500" />
+                            <p className="mt-3 text-sm text-slate-500">
+                                Memuat calon penghuni...
+                            </p>
+                        </div>
+                    </div>
+
+                ) : candidateList.length === 0 ? (
+
+                    <div className="px-5 py-10 text-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-300">
+                            <Users size={24} />
+                        </div>
+
+                        <p className="mt-3 font-medium text-slate-700">
+                            Belum ada calon penghuni
+                        </p>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                            Data akan muncul di sini setelah seseorang melakukan Register.
+                        </p>
+                    </div>
+
+                ) : (
+
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm">
+
+                            <thead className="bg-slate-50">
+                                <tr>
+                                    <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                                        Calon Penghuni
+                                    </th>
+                                    <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                                        Data Diri
+                                    </th>
+                                    <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                                        Tujuan Ngekos
+                                    </th>
+                                    <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                                        Tanggal Daftar
+                                    </th>
+                                    <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                                        Status
+                                    </th>
+                                    <th className="px-5 py-3 text-right font-semibold text-slate-600">
+                                        Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="divide-y divide-slate-100">
+                                {candidateList.map((candidate) => (
+                                    <tr
+                                        key={candidate.id}
+                                        className="transition hover:bg-slate-50"
+                                    >
+                                        <td className="px-5 py-4">
+                                            <div className="flex min-w-[230px] items-start gap-3">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                                                    <UserRound size={18} />
+                                                </div>
+
+                                                <div>
+                                                    <p className="font-semibold text-slate-800">
+                                                        {candidate.name || '-'}
+                                                    </p>
+                                                    <p className="mt-1 text-xs text-slate-500">
+                                                        {candidate.phone || '-'}
+                                                    </p>
+                                                    <p className="mt-1 text-xs text-slate-400">
+                                                        Username: {candidate.username || '-'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td className="px-5 py-4">
+                                            <div className="min-w-[220px] space-y-1 text-xs text-slate-500">
+                                                <p><span className="font-medium text-slate-700">KTP:</span> {candidate.identity_number || '-'}</p>
+                                                <p><span className="font-medium text-slate-700">Gender:</span> {candidate.gender || '-'}</p>
+                                                <p><span className="font-medium text-slate-700">Pekerjaan:</span> {candidate.occupation || '-'}</p>
+                                            </div>
+                                        </td>
+
+                                        <td className="px-5 py-4">
+                                            <div className="min-w-[180px]">
+                                                <p className="text-sm font-medium text-slate-700">
+                                                    {candidate.boarding_purpose || '-'}
+                                                </p>
+                                                <p className="mt-1 line-clamp-2 text-xs text-slate-400">
+                                                    {candidate.address || '-'}
+                                                </p>
+                                            </div>
+                                        </td>
+
+                                        <td className="px-5 py-4 whitespace-nowrap text-slate-600">
+                                            {formatDate(candidate.created_at)}
+                                        </td>
+
+                                        <td className="px-5 py-4">
+                                            <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                                                CALON
+                                            </span>
+                                        </td>
+
+                                        <td className="px-5 py-4">
+                                            <div className="flex justify-end">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openCandidateDetail(candidate)}
+                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                                                    title="Lihat data registrasi"
+                                                >
+                                                    <Eye size={15} />
+                                                    Lihat Data
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                )}
 
             </div>
 
@@ -2678,6 +3075,58 @@ function Tenants() {
                             />
 
 
+                            {!editingTenant && (
+
+                                <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
+
+                                    <div className="mb-4">
+
+                                        <p className="text-sm font-semibold text-indigo-800">
+                                            Akun Login Penghuni
+                                        </p>
+
+                                        <p className="mt-1 text-xs leading-5 text-indigo-600">
+                                            Akun ini digunakan penghuni untuk login ke sistem ADELINA KOST.
+                                        </p>
+
+                                    </div>
+
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+
+                                        <FormInput
+                                            label="Username"
+                                            name="username"
+                                            value={
+                                                formData.username
+                                            }
+                                            onChange={
+                                                handleChange
+                                            }
+                                            placeholder="Contoh: andi.saputra"
+                                        />
+
+
+                                        <FormInput
+                                            label="Password"
+                                            name="password"
+                                            type="password"
+                                            value={
+                                                formData.password
+                                            }
+                                            onChange={
+                                                handleChange
+                                            }
+                                            placeholder="Minimal 6 karakter"
+                                        />
+
+                                    </div>
+
+                                </div>
+
+                            )}
+
+
                             <FormInput
                                 label="Nomor Identitas"
                                 name="identityNumber"
@@ -3174,6 +3623,243 @@ function Tenants() {
                     </ModalOverlay>
 
                 )}
+            {/* =================================================
+                DETAIL CALON PENGHUNI
+            ================================================= */}
+
+            {isCandidateDetailOpen && (
+
+                <ModalOverlay>
+
+                    <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
+
+                        <ModalHeader
+                            title="Detail Calon Penghuni"
+                            subtitle="Data yang diisi saat Register"
+                            onClose={closeCandidateDetail}
+                        />
+
+                        {candidateDetailLoading ? (
+
+                            <div className="flex min-h-[300px] items-center justify-center p-6">
+                                <div className="text-center">
+                                    <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-amber-500" />
+                                    <p className="mt-3 text-sm text-slate-500">
+                                        Mengambil data registrasi...
+                                    </p>
+                                </div>
+                            </div>
+
+                        ) : candidateDetail ? (
+
+                            <div className="space-y-5 p-5">
+
+                                <div className="flex flex-col gap-4 rounded-2xl bg-amber-50 p-4 sm:flex-row sm:items-center">
+                                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                                        <UserRound size={27} />
+                                    </div>
+
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className="text-lg font-bold text-slate-800">
+                                            {candidateDetail.tenant?.name || '-'}
+                                        </h3>
+                                        <p className="mt-1 text-sm text-slate-500">
+                                            Terdaftar sebagai calon penghuni
+                                        </p>
+                                    </div>
+
+                                    <span className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                        CALON
+                                    </span>
+                                </div>
+
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <DetailItem
+                                        icon={<UserRound size={17} />}
+                                        label="Nama Lengkap"
+                                        value={candidateDetail.tenant?.name || '-'}
+                                    />
+
+                                    <DetailItem
+                                        icon={<Phone size={17} />}
+                                        label="Nomor HP"
+                                        value={candidateDetail.tenant?.phone || '-'}
+                                    />
+
+                                    <DetailItem
+                                        icon={<CreditCard size={17} />}
+                                        label="Nomor KTP"
+                                        value={candidateDetail.tenant?.identity_number || '-'}
+                                    />
+
+                                    <DetailItem
+                                        icon={<Users size={17} />}
+                                        label="Gender"
+                                        value={candidateDetail.tenant?.gender || '-'}
+                                    />
+
+                                    <DetailItem
+                                        icon={<BriefcaseBusiness size={17} />}
+                                        label="Pekerjaan"
+                                        value={candidateDetail.tenant?.occupation || '-'}
+                                    />
+
+                                    <DetailItem
+                                        icon={<UserRound size={17} />}
+                                        label="Tujuan Ngekos"
+                                        value={candidateDetail.tenant?.boarding_purpose || '-'}
+                                    />
+
+                                    <DetailItem
+                                        icon={<UserRound size={17} />}
+                                        label="Username"
+                                        value={candidateDetail.tenant?.username || '-'}
+                                    />
+
+                                    <DetailItem
+                                        icon={<CalendarDays size={17} />}
+                                        label="Tanggal Daftar"
+                                        value={formatDate(candidateDetail.tenant?.created_at)}
+                                    />
+                                </div>
+
+                                <div className="rounded-xl bg-slate-50 p-4">
+                                    <p className="text-xs text-slate-400">Alamat</p>
+                                    <p className="mt-1 text-sm leading-6 text-slate-700">
+                                        {candidateDetail.tenant?.address || '-'}
+                                    </p>
+                                </div>
+
+                                {/* KTP READ ONLY */}
+                                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">
+                                                Dokumen KTP
+                                            </p>
+                                            <p className="mt-1 text-xs text-slate-500">
+                                                KTP yang diupload saat Register
+                                            </p>
+                                        </div>
+
+                                        <CreditCard size={20} className="text-blue-500" />
+                                    </div>
+
+                                    {candidateDetail.document ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsKtpPreviewOpen(true)}
+                                            className="mt-4 block w-full cursor-zoom-in overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+                                        >
+                                            <img
+                                                src={`http://localhost:5000/${String(candidateDetail.document.file_path).replace(/^\/+/, '')}`}
+                                                alt="KTP Calon Penghuni"
+                                                className="max-h-80 w-full object-contain"
+                                            />
+                                        </button>
+                                    ) : (
+                                        <div className="mt-4 rounded-xl bg-slate-50 p-5 text-center text-sm text-slate-500">
+                                            KTP belum tersedia.
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* BOOKING */}
+                                <div className="rounded-2xl border border-slate-200 p-4">
+                                    <div className="flex items-center gap-2">
+                                        <DoorOpen size={18} className="text-slate-400" />
+                                        <p className="text-sm font-semibold text-slate-800">
+                                            Informasi Booking
+                                        </p>
+                                    </div>
+
+                                    {candidateDetail.booking ? (
+                                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                                            <DetailItem
+                                                icon={<DoorOpen size={17} />}
+                                                label="Kamar"
+                                                value={`Kamar ${candidateDetail.booking.room_number || '-'}`}
+                                            />
+                                            <DetailItem
+                                                icon={<BriefcaseBusiness size={17} />}
+                                                label="Status Booking"
+                                                value={candidateDetail.booking.booking_status || '-'}
+                                            />
+                                            <DetailItem
+                                                icon={<CalendarDays size={17} />}
+                                                label="Lama Booking"
+                                                value={candidateDetail.booking.booking_days ? `${candidateDetail.booking.booking_days} hari` : '-'}
+                                            />
+                                            <DetailItem
+                                                icon={<CreditCard size={17} />}
+                                                label="Nominal Booking"
+                                                value={formatRupiah(candidateDetail.booking.booking_amount)}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <p className="mt-4 text-sm text-slate-500">
+                                            Belum ada data booking.
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* PEMBAYARAN BOOKING */}
+                                <div className="rounded-2xl border border-slate-200 p-4">
+                                    <p className="text-sm font-semibold text-slate-800">
+                                        Pembayaran Booking
+                                    </p>
+
+                                    {candidateDetail.booking_payment ? (
+                                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                                            <DetailItem
+                                                icon={<CreditCard size={17} />}
+                                                label="Jumlah"
+                                                value={formatRupiah(candidateDetail.booking_payment.amount)}
+                                            />
+                                            <DetailItem
+                                                icon={<BriefcaseBusiness size={17} />}
+                                                label="Status"
+                                                value={candidateDetail.booking_payment.status || '-'}
+                                            />
+                                            <DetailItem
+                                                icon={<CreditCard size={17} />}
+                                                label="Metode"
+                                                value={candidateDetail.booking_payment.payment_method || '-'}
+                                            />
+                                            <DetailItem
+                                                icon={<CalendarDays size={17} />}
+                                                label="Tanggal Bayar"
+                                                value={formatDate(candidateDetail.booking_payment.payment_date)}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <p className="mt-4 text-sm text-slate-500">
+                                            Belum ada pembayaran booking.
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-end border-t border-slate-100 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={closeCandidateDetail}
+                                        className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                    >
+                                        Tutup
+                                    </button>
+                                </div>
+
+                            </div>
+
+                        ) : null}
+
+                    </div>
+
+                </ModalOverlay>
+
+            )}
+
+
             {isKtpPreviewOpen && ktpDocument && (
 
                 <ModalOverlay>

@@ -15,6 +15,7 @@ import {
     MapPin,
     Wallet,
     FileText,
+    Clock3,
 } from 'lucide-react'
 
 import RoomCard from '../components/RoomCard'
@@ -94,7 +95,9 @@ function Rooms() {
             typeof room.tenant_name === 'string' &&
             room.tenant_name.trim()
         ) {
+
             return room.tenant_name.trim()
+
         }
 
 
@@ -102,7 +105,9 @@ function Rooms() {
             typeof room.tenantName === 'string' &&
             room.tenantName.trim()
         ) {
+
             return room.tenantName.trim()
+
         }
 
 
@@ -110,7 +115,9 @@ function Rooms() {
             typeof room.occupant_name === 'string' &&
             room.occupant_name.trim()
         ) {
+
             return room.occupant_name.trim()
+
         }
 
 
@@ -118,7 +125,9 @@ function Rooms() {
             typeof room.occupantName === 'string' &&
             room.occupantName.trim()
         ) {
+
             return room.occupantName.trim()
+
         }
 
 
@@ -126,7 +135,9 @@ function Rooms() {
             typeof room.tenant === 'string' &&
             room.tenant.trim()
         ) {
+
             return room.tenant.trim()
+
         }
 
 
@@ -185,6 +196,7 @@ function Rooms() {
             const tenant =
                 room.tenants[0]
 
+
             if (tenant) {
 
                 return (
@@ -215,6 +227,9 @@ function Rooms() {
             case 'available':
                 return 'TERSEDIA'
 
+            case 'booked':
+                return 'DIBOOKING'
+
             case 'occupied':
                 return 'TERISI'
 
@@ -223,6 +238,12 @@ function Rooms() {
 
             case 'TERSEDIA':
                 return 'TERSEDIA'
+
+            case 'BOOKED':
+                return 'DIBOOKING'
+
+            case 'DIBOOKING':
+                return 'DIBOOKING'
 
             case 'TERISI':
                 return 'TERISI'
@@ -249,6 +270,12 @@ function Rooms() {
             case 'TERSEDIA':
                 return 'available'
 
+            case 'BOOKED':
+                return 'booked'
+
+            case 'DIBOOKING':
+                return 'booked'
+
             case 'TERISI':
                 return 'occupied'
 
@@ -272,6 +299,7 @@ function Rooms() {
         try {
 
             setLoading(true)
+
 
             const response =
                 await getRooms()
@@ -379,6 +407,7 @@ function Rooms() {
                 'LOAD ROOMS ERROR:',
                 error
             )
+
 
             alert(
                 error?.message ||
@@ -709,6 +738,10 @@ function Rooms() {
         }
 
 
+        // =================================================
+        // KAMAR TERISI
+        // =================================================
+
         if (
             editingRoom &&
             editingRoom.status === 'TERISI'
@@ -728,6 +761,37 @@ function Rooms() {
 
         }
 
+
+        // =================================================
+        // KAMAR BOOKING
+        // =================================================
+
+        if (
+            editingRoom &&
+            (
+                editingRoom.status === 'BOOKED' ||
+                editingRoom.status === 'DIBOOKING'
+            )
+        ) {
+
+            if (
+                formData.status !== 'DIBOOKING'
+            ) {
+
+                alert(
+                    'Kamar sedang dalam proses booking. Selesaikan proses booking terlebih dahulu.'
+                )
+
+                return
+
+            }
+
+        }
+
+
+        // =================================================
+        // DUPLICATE ROOM
+        // =================================================
 
         const duplicateRoom =
             roomList.find(
@@ -785,6 +849,10 @@ function Rooms() {
         }
 
 
+        // =================================================
+        // PAYLOAD
+        // =================================================
+
         const payload = {
 
             room_number:
@@ -824,6 +892,10 @@ function Rooms() {
             setSaving(true)
 
 
+            // =================================================
+            // UPDATE
+            // =================================================
+
             if (editingRoom) {
 
                 const response =
@@ -849,7 +921,14 @@ function Rooms() {
                     'Kamar berhasil diperbarui.'
                 )
 
-            } else {
+            }
+
+
+            // =================================================
+            // CREATE
+            // =================================================
+
+            else {
 
                 const response =
                     await createRoom(
@@ -909,12 +988,34 @@ function Rooms() {
 
     async function handleDeactivate(room) {
 
+        // =================================================
+        // KAMAR TERISI
+        // =================================================
+
         if (
             room.status === 'TERISI'
         ) {
 
             alert(
                 'Kamar sedang terisi. Selesaikan kontrak penghuni terlebih dahulu.'
+            )
+
+            return
+
+        }
+
+
+        // =================================================
+        // KAMAR BOOKING
+        // =================================================
+
+        if (
+            room.status === 'BOOKED' ||
+            room.status === 'DIBOOKING'
+        ) {
+
+            alert(
+                'Kamar sedang dalam proses booking. Selesaikan proses booking terlebih dahulu.'
             )
 
             return
@@ -1036,6 +1137,14 @@ function Rooms() {
         ).length
 
 
+    const bookedRooms =
+        roomList.filter(
+            (room) =>
+                room.status === 'DIBOOKING' ||
+                room.status === 'BOOKED'
+        ).length
+
+
     const availableRooms =
         roomList.filter(
             (room) =>
@@ -1056,41 +1165,94 @@ function Rooms() {
 
     function getStatusBadge(status) {
 
-        if (status === 'TERSEDIA') {
+        // =================================================
+        // TERSEDIA
+        // =================================================
+
+        if (
+            status === 'TERSEDIA'
+        ) {
 
             return {
+
                 className:
                     'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200',
+
                 icon:
                     <CheckCircle2 size={13} />,
+
                 label:
                     'Tersedia',
+
             }
 
         }
 
 
-        if (status === 'TERISI') {
+        // =================================================
+        // BOOKED / DIBOOKING
+        // =================================================
+
+        if (
+            status === 'BOOKED' ||
+            status === 'DIBOOKING'
+        ) {
 
             return {
+
                 className:
-                    'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200',
+                    'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200',
+
                 icon:
-                    <Users size={13} />,
+                    <Clock3 size={13} />,
+
                 label:
-                    'Terisi',
+                    'Booking',
+
             }
 
         }
 
 
+        // =================================================
+        // TERISI
+        // =================================================
+
+        if (
+            status === 'TERISI'
+        ) {
+
+            return {
+
+                className:
+                    'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200',
+
+                icon:
+                    <Users size={13} />,
+
+                label:
+                    'Terisi',
+
+            }
+
+        }
+
+
+        // =================================================
+        // NONAKTIF
+        // =================================================
+
         return {
+
             className:
                 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-200',
+
             icon:
                 <Ban size={13} />,
+
             label:
                 'Nonaktif',
+
         }
 
     }
@@ -1235,6 +1397,40 @@ function Rooms() {
                 </div>
 
 
+                {/* BOOKED */}
+
+                <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+
+                    <div className="flex items-center justify-between">
+
+                        <div>
+
+                            <p className="text-sm font-medium text-slate-500">
+                                Kamar Booking
+                            </p>
+
+                            <p className="mt-1 text-2xl font-bold text-amber-600">
+                                {loading ? '...' : bookedRooms}
+                            </p>
+
+                            <p className="mt-1 text-xs text-slate-400">
+                                Sedang dipesan
+                            </p>
+
+                        </div>
+
+
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition group-hover:bg-amber-600 group-hover:text-white">
+
+                            <Clock3 size={21} />
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
                 {/* TERSEDIA */}
 
                 <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -1357,6 +1553,10 @@ function Rooms() {
                                 Tersedia
                             </option>
 
+                            <option value="DIBOOKING">
+                                Booking
+                            </option>
+
                             <option value="TERISI">
                                 Terisi
                             </option>
@@ -1433,7 +1633,9 @@ function Rooms() {
                                     className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
                                 >
 
-                                    {/* CARD TOP */}
+                                    {/* =================================================
+                                        CARD TOP
+                                    ================================================= */}
 
                                     <div className="border-b border-slate-100 p-4">
 
@@ -1476,25 +1678,31 @@ function Rooms() {
                                         </div>
 
 
-                                        {/* ROOM CARD ASLI */}
+                                        {/* =================================================
+                                            ROOM CARD ASLI
+                                        ================================================= */}
 
                                         <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
 
                                             <RoomCard
                                                 room={room}
+
                                                 buildingName={
                                                     getBuildingName(
                                                         room
                                                     )
                                                 }
+
                                                 floorName={
                                                     getFloorName(
                                                         room
                                                     )
                                                 }
+
                                                 tenant={
                                                     room.tenant
                                                 }
+
                                                 tenantName={
                                                     room.tenantName
                                                 }
@@ -1505,7 +1713,9 @@ function Rooms() {
                                     </div>
 
 
-                                    {/* EXTRA INFORMATION */}
+                                    {/* =================================================
+                                        EXTRA INFORMATION
+                                    ================================================= */}
 
                                     <div className="space-y-2.5 px-4 py-3">
 
@@ -1517,7 +1727,11 @@ function Rooms() {
                                             />
 
                                             <span className="truncate">
-                                                {getBuildingName(room)}
+
+                                                {getBuildingName(
+                                                    room
+                                                )}
+
                                             </span>
 
                                         </div>
@@ -1532,7 +1746,10 @@ function Rooms() {
 
                                             <span className="truncate">
 
-                                                {getFloorName(room) || 'Tidak ada lantai'}
+                                                {getFloorName(
+                                                    room
+                                                ) ||
+                                                    'Tidak ada lantai'}
 
                                             </span>
 
@@ -1553,7 +1770,9 @@ function Rooms() {
                                                 ).toLocaleString('id-ID')}
 
                                                 <span className="font-normal text-slate-400">
+
                                                     {' '}/ bulan
+
                                                 </span>
 
                                             </span>
@@ -1571,7 +1790,9 @@ function Rooms() {
                                                 />
 
                                                 <span className="line-clamp-2">
+
                                                     {room.notes}
+
                                                 </span>
 
                                             </div>
@@ -1581,7 +1802,9 @@ function Rooms() {
                                     </div>
 
 
-                                    {/* ACTION */}
+                                    {/* =================================================
+                                        ACTION
+                                    ================================================= */}
 
                                     <div className="flex gap-2 border-t border-slate-100 bg-slate-50/70 p-3">
 
@@ -1611,7 +1834,11 @@ function Rooms() {
                                                     disabled={
                                                         saving ||
                                                         room.status ===
-                                                        'TERISI'
+                                                        'TERISI' ||
+                                                        room.status ===
+                                                        'BOOKED' ||
+                                                        room.status ===
+                                                        'DIBOOKING'
                                                     }
                                                     onClick={() =>
                                                         handleDeactivate(
@@ -1680,14 +1907,16 @@ function Rooms() {
                 <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm">
 
                     {/* MODAL WRAPPER */}
+
                     <div className="flex h-full w-full items-start justify-center overflow-y-auto px-4 py-8 sm:py-10">
 
                         {/* MODAL */}
+
                         <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
                             {/* =================================================
-                    MODAL HEADER
-                ================================================= */}
+                                MODAL HEADER
+                            ================================================= */}
 
                             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
 
@@ -1702,6 +1931,7 @@ function Rooms() {
 
                                     </div>
 
+
                                     <div>
 
                                         <h2 className="text-lg font-bold text-slate-800">
@@ -1712,6 +1942,7 @@ function Rooms() {
                                             }
 
                                         </h2>
+
 
                                         <p className="mt-0.5 text-xs text-slate-500">
 
@@ -1725,6 +1956,7 @@ function Rooms() {
                                     </div>
 
                                 </div>
+
 
                                 <button
                                     type="button"
@@ -1741,8 +1973,8 @@ function Rooms() {
 
 
                             {/* =================================================
-                    MODAL CONTENT
-                ================================================= */}
+                                MODAL CONTENT
+                            ================================================= */}
 
                             <div className="max-h-[calc(100vh-150px)] overflow-y-auto">
 
@@ -1751,10 +1983,9 @@ function Rooms() {
                                     className="space-y-5 p-6"
                                 >
 
-
                                     {/* =================================================
-                            NOMOR KAMAR
-                        ================================================= */}
+                                        NOMOR KAMAR
+                                    ================================================= */}
 
                                     <div>
 
@@ -1764,12 +1995,14 @@ function Rooms() {
 
                                         </label>
 
+
                                         <div className="relative">
 
                                             <BedDouble
                                                 size={17}
                                                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                                             />
+
 
                                             <input
                                                 type="text"
@@ -1790,8 +2023,8 @@ function Rooms() {
 
 
                                     {/* =================================================
-                            BUILDING
-                        ================================================= */}
+                                        BUILDING
+                                    ================================================= */}
 
                                     <div>
 
@@ -1801,12 +2034,14 @@ function Rooms() {
 
                                         </label>
 
+
                                         <div className="relative">
 
                                             <Building2
                                                 size={17}
                                                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                                             />
+
 
                                             <select
                                                 name="buildingId"
@@ -1822,6 +2057,7 @@ function Rooms() {
                                                 <option value="">
                                                     Pilih Bangunan
                                                 </option>
+
 
                                                 {buildings
                                                     .filter(
@@ -1858,8 +2094,8 @@ function Rooms() {
 
 
                                     {/* =================================================
-                            FLOOR
-                        ================================================= */}
+                                        FLOOR
+                                    ================================================= */}
 
                                     <div>
 
@@ -1869,12 +2105,14 @@ function Rooms() {
 
                                         </label>
 
+
                                         <div className="relative">
 
                                             <Layers3
                                                 size={17}
                                                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                                             />
+
 
                                             <select
                                                 name="floorId"
@@ -1890,6 +2128,7 @@ function Rooms() {
                                                 <option value="">
                                                     Tidak menggunakan lantai
                                                 </option>
+
 
                                                 {floors
                                                     .filter(
@@ -1934,6 +2173,7 @@ function Rooms() {
 
                                         </div>
 
+
                                         <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
 
                                             <MapPin size={12} />
@@ -1946,8 +2186,8 @@ function Rooms() {
 
 
                                     {/* =================================================
-                            PRICE
-                        ================================================= */}
+                                        PRICE
+                                    ================================================= */}
 
                                     <div>
 
@@ -1957,12 +2197,14 @@ function Rooms() {
 
                                         </label>
 
+
                                         <div className="relative">
 
                                             <Wallet
                                                 size={17}
                                                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                                             />
+
 
                                             <input
                                                 type="number"
@@ -1984,8 +2226,8 @@ function Rooms() {
 
 
                                     {/* =================================================
-                            STATUS
-                        ================================================= */}
+                                        STATUS
+                                    ================================================= */}
 
                                     <div>
 
@@ -1995,6 +2237,10 @@ function Rooms() {
 
                                         </label>
 
+
+                                        {/* =================================================
+                                            TERISI
+                                        ================================================= */}
 
                                         {editingRoom?.status ===
                                             'TERISI' ? (
@@ -2007,6 +2253,7 @@ function Rooms() {
 
                                                 </div>
 
+
                                                 <div>
 
                                                     <p className="text-sm font-semibold text-blue-700">
@@ -2014,6 +2261,7 @@ function Rooms() {
                                                         Kamar Terisi
 
                                                     </p>
+
 
                                                     <p className="text-xs text-blue-600/70">
 
@@ -2025,46 +2273,96 @@ function Rooms() {
 
                                             </div>
 
-                                        ) : (
+                                        )
 
-                                            <div className="relative">
 
-                                                <CheckCircle2
-                                                    size={17}
-                                                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                                                />
+                                            /* =================================================
+                                                BOOKED / DIBOOKING
+                                            ================================================= */
 
-                                                <select
-                                                    name="status"
-                                                    value={
-                                                        formData.status
-                                                    }
-                                                    onChange={
-                                                        handleChange
-                                                    }
-                                                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                                                >
+                                            : (
+                                                editingRoom?.status ===
+                                                'BOOKED' ||
+                                                editingRoom?.status ===
+                                                'DIBOOKING'
+                                            ) ? (
 
-                                                    <option value="TERSEDIA">
-                                                        TERSEDIA
-                                                    </option>
+                                                <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
 
-                                                    <option value="NONAKTIF">
-                                                        NONAKTIF
-                                                    </option>
+                                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-amber-600">
 
-                                                </select>
+                                                        <Clock3 size={17} />
 
-                                            </div>
+                                                    </div>
 
-                                        )}
+
+                                                    <div>
+
+                                                        <p className="text-sm font-semibold text-amber-700">
+
+                                                            Kamar Booking
+
+                                                        </p>
+
+
+                                                        <p className="text-xs text-amber-600/70">
+
+                                                            Status dikelola melalui proses booking dan pembayaran.
+
+                                                        </p>
+
+                                                    </div>
+
+                                                </div>
+
+                                            )
+
+
+                                                /* =================================================
+                                                    AVAILABLE / INACTIVE
+                                                ================================================= */
+
+                                                : (
+
+                                                    <div className="relative">
+
+                                                        <CheckCircle2
+                                                            size={17}
+                                                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                                                        />
+
+
+                                                        <select
+                                                            name="status"
+                                                            value={
+                                                                formData.status
+                                                            }
+                                                            onChange={
+                                                                handleChange
+                                                            }
+                                                            className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                                                        >
+
+                                                            <option value="TERSEDIA">
+                                                                TERSEDIA
+                                                            </option>
+
+                                                            <option value="NONAKTIF">
+                                                                NONAKTIF
+                                                            </option>
+
+                                                        </select>
+
+                                                    </div>
+
+                                                )}
 
                                     </div>
 
 
                                     {/* =================================================
-                            NOTES
-                        ================================================= */}
+                                        NOTES
+                                    ================================================= */}
 
                                     <div>
 
@@ -2074,12 +2372,14 @@ function Rooms() {
 
                                         </label>
 
+
                                         <div className="relative">
 
                                             <FileText
                                                 size={17}
                                                 className="absolute left-3.5 top-3.5 text-slate-400"
                                             />
+
 
                                             <textarea
                                                 name="notes"
@@ -2100,8 +2400,8 @@ function Rooms() {
 
 
                                     {/* =================================================
-                            BUTTON
-                        ================================================= */}
+                                        BUTTON
+                                    ================================================= */}
 
                                     <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
 
@@ -2115,6 +2415,7 @@ function Rooms() {
                                             Batal
 
                                         </button>
+
 
                                         <button
                                             type="submit"
@@ -2141,6 +2442,7 @@ function Rooms() {
                                                         : <Plus size={16} />
                                                     }
 
+
                                                     {editingRoom
                                                         ? 'Simpan Perubahan'
                                                         : 'Tambah Kamar'
@@ -2165,6 +2467,7 @@ function Rooms() {
                 </div>
 
             )}
+
         </div>
 
     )

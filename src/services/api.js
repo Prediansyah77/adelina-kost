@@ -1,26 +1,71 @@
 import axios from "axios";
 
+
+// ======================================================
+// AXIOS INSTANCE
+// ======================================================
+
 const api = axios.create({
     baseURL: "http://localhost:5000/api",
-    headers: {
-        "Content-Type": "application/json",
-    },
 });
 
-// Tambahkan JWT otomatis ke setiap request
+
+// ======================================================
+// JWT + REQUEST CONFIG
+// ======================================================
+
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem("token");
+
+        // ==================================================
+        // JWT
+        // ==================================================
+
+        const token =
+            localStorage.getItem("token");
 
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+
+            config.headers.Authorization =
+                `Bearer ${token}`;
+
         }
 
+
+        // ==================================================
+        // FORM DATA
+        //
+        // Jika request menggunakan FormData,
+        // JANGAN paksa Content-Type application/json.
+        //
+        // Browser/Axios akan otomatis membuat:
+        //
+        // multipart/form-data; boundary=...
+        //
+        // sehingga Multer bisa membaca req.file.
+        // ==================================================
+
+        if (
+            config.data instanceof FormData
+        ) {
+
+            delete config.headers["Content-Type"];
+
+        }
+
+
         return config;
+
     },
+
     (error) => {
-        return Promise.reject(error);
+
+        return Promise.reject(
+            error
+        );
+
     }
 );
+
 
 export default api;

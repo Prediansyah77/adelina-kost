@@ -1,0 +1,1385 @@
+import {
+    ArrowRight,
+    BedDouble,
+    CheckCircle2,
+    MapPin,
+    ShieldCheck,
+    Sparkles,
+    Wifi,
+    Wind,
+    CookingPot,
+    Shirt,
+    Car,
+} from 'lucide-react'
+
+import { Link } from 'react-router-dom'
+
+import { useEffect, useState } from 'react'
+
+import { getPublicRooms } from '../../services/roomService'
+
+
+// =====================================================
+// GOOGLE MAPS ADELINA KOST
+// =====================================================
+
+const GOOGLE_MAPS_URL =
+    'https://maps.app.goo.gl/VaRxTtRq1PAJTAZ39'
+
+
+function LandingPage() {
+
+    // =====================================================
+    // STATE JUMLAH KAMAR TERSEDIA
+    // =====================================================
+
+    const [availableRooms, setAvailableRooms] =
+        useState(0)
+
+
+    // =====================================================
+    // AMBIL DATA KAMAR DARI BACKEND
+    // =====================================================
+
+    useEffect(() => {
+
+        const loadAvailableRooms = async () => {
+
+            try {
+
+                const response =
+                    await getPublicRooms()
+
+
+                /*
+                 * Bisa menerima:
+                 *
+                 * 1. Array langsung
+                 *
+                 * 2. Object:
+                 * {
+                 *     success: true,
+                 *     data: []
+                 * }
+                 */
+
+                const roomData =
+                    Array.isArray(response)
+                        ? response
+                        : Array.isArray(response?.data)
+                            ? response.data
+                            : []
+
+
+                // =================================================
+                // HITUNG KAMAR AVAILABLE
+                // =================================================
+
+                const totalAvailable =
+                    roomData.filter(
+                        (room) =>
+                            room.status === "available"
+                    ).length
+
+
+                setAvailableRooms(
+                    totalAvailable
+                )
+
+
+            } catch (error) {
+
+                console.error(
+                    "Landing Page Rooms Error:",
+                    error
+                )
+
+
+                // =================================================
+                // JIKA GAGAL:
+                // TETAP TAMPILKAN LANDING PAGE
+                // =================================================
+
+                setAvailableRooms(0)
+
+            }
+
+        }
+
+
+        loadAvailableRooms()
+
+    }, [])
+
+
+    return (
+
+        <div>
+
+
+            {/* =====================================================
+                HERO
+            ===================================================== */}
+
+            <section
+                id="beranda"
+                className="relative overflow-hidden bg-slate-50"
+            >
+
+                <div
+                    className="
+                        mx-auto
+                        grid
+                        min-h-[650px]
+                        max-w-7xl
+                        items-center
+                        gap-12
+                        px-4
+                        py-16
+                        sm:px-6
+                        lg:grid-cols-2
+                        lg:px-8
+                        lg:py-20
+                    "
+                >
+
+                    {/* =================================================
+                        TEXT
+                    ================================================= */}
+
+                    <div>
+
+                        {/* =================================================
+                            BADGE
+                        ================================================= */}
+
+                        <div
+                            className="
+                                mb-5
+                                inline-flex
+                                items-center
+                                gap-2
+                                rounded-full
+                                border
+                                border-blue-100
+                                bg-blue-50
+                                px-3
+                                py-1.5
+                                text-xs
+                                font-semibold
+                                text-blue-700
+                            "
+                        >
+
+                            <Sparkles size={14} />
+
+                            Hunian nyaman di Pekanbaru
+
+                        </div>
+
+
+                        {/* =================================================
+                            TITLE
+                        ================================================= */}
+
+                        <h1
+                            className="
+                                max-w-2xl
+                                text-4xl
+                                font-bold
+                                leading-tight
+                                tracking-tight
+                                text-slate-900
+                                sm:text-5xl
+                                lg:text-6xl
+                            "
+                        >
+
+                            Tempat Tinggal Nyaman untuk
+
+                            <span className="block text-blue-600">
+                                Aktivitas Sehari-hari
+                            </span>
+
+                        </h1>
+
+
+                        {/* =================================================
+                            DESCRIPTION
+                        ================================================= */}
+
+                        <p
+                            className="
+                                mt-6
+                                max-w-xl
+                                text-base
+                                leading-7
+                                text-slate-600
+                                sm:text-lg
+                            "
+                        >
+
+                            Temukan kamar kos yang nyaman dengan
+                            fasilitas yang mendukung kebutuhanmu,
+                            berada di lokasi strategis Pekanbaru.
+
+                        </p>
+
+
+                        {/* =================================================
+                            HARGA + KAMAR TERSEDIA
+                        ================================================= */}
+
+                        <div
+                            className="
+                                mt-5
+                                flex
+                                flex-wrap
+                                items-start
+                                gap-6
+                            "
+                        >
+
+                            {/* =================================================
+                                HARGA MULAI
+                            ================================================= */}
+
+                            <div>
+
+                                <p
+                                    className="
+                                        text-sm
+                                        font-medium
+                                        text-slate-500
+                                    "
+                                >
+
+                                </p>
+
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-2xl
+                                        font-bold
+                                        text-slate-900
+                                    "
+                                >
+
+
+
+                                    <span
+                                        className="
+                                            ml-1
+                                            text-sm
+                                            font-medium
+                                            text-slate-500
+                                        "
+                                    >
+
+                                    </span>
+
+                                </p>
+
+                            </div>
+
+
+                            {/* =================================================
+                                KAMAR TERSEDIA
+                            ================================================= */}
+
+                            <div>
+
+                                <p
+                                    className="
+                                        text-sm
+                                        font-medium
+                                        text-slate-500
+                                    "
+                                >
+                                    Kamar tersedia
+                                </p>
+
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-2xl
+                                        font-bold
+                                        text-emerald-600
+                                    "
+                                >
+
+                                    {availableRooms}
+
+                                    <span
+                                        className="
+                                            ml-1
+                                            text-sm
+                                            font-medium
+                                            text-slate-500
+                                        "
+                                    >
+                                        kamar
+                                    </span>
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =================================================
+                            BUTTON
+                        ================================================= */}
+
+                        <div
+                            className="
+                                mt-8
+                                flex
+                                flex-col
+                                gap-3
+                                sm:flex-row
+                            "
+                        >
+
+                            {/* =================================================
+                                LIHAT KAMAR
+                            ================================================= */}
+
+                            <Link
+                                to="/kamar"
+                                className="
+                                    inline-flex
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                    rounded-xl
+                                    bg-blue-600
+                                    px-5
+                                    py-3.5
+                                    text-sm
+                                    font-semibold
+                                    text-white
+                                    shadow-sm
+                                    transition
+                                    hover:bg-blue-700
+                                "
+                            >
+
+                                Lihat Kamar
+
+                                <ArrowRight size={17} />
+
+                            </Link>
+
+
+                            {/* =================================================
+                                LIHAT LOKASI
+                            ================================================= */}
+
+                            <a
+                                href={GOOGLE_MAPS_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="
+                                    inline-flex
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                    rounded-xl
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    px-5
+                                    py-3.5
+                                    text-sm
+                                    font-semibold
+                                    text-slate-700
+                                    transition
+                                    hover:bg-slate-50
+                                "
+                            >
+
+                                <MapPin size={17} />
+
+                                Lihat Lokasi
+
+                            </a>
+
+                        </div>
+
+
+                        {/* =================================================
+                            FEATURES
+                        ================================================= */}
+
+                        <div
+                            className="
+                                mt-10
+                                grid
+                                max-w-xl
+                                grid-cols-2
+                                gap-4
+                                sm:grid-cols-3
+                            "
+                        >
+
+                            <FeatureItem>
+                                Spring Bed
+                            </FeatureItem>
+
+
+                            <FeatureItem>
+                                WiFi
+                            </FeatureItem>
+
+
+                            <FeatureItem>
+                                Kamar mandi dalam
+                            </FeatureItem>
+
+
+                            <FeatureItem>
+                                Kipas Angin
+                            </FeatureItem>
+
+
+                            <FeatureItem>
+                                Lemari
+                            </FeatureItem>
+
+
+                            <FeatureItem>
+                                Dapur Umum
+                            </FeatureItem>
+
+
+                            <FeatureItem>
+                                Area Jemuran
+                            </FeatureItem>
+
+
+                            <FeatureItem>
+                                Area Parkir
+                            </FeatureItem>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* =================================================
+                        HERO IMAGE
+                    ================================================= */}
+
+                    <div className="relative">
+
+                        <div
+                            className="
+                                absolute
+                                -inset-4
+                                rounded-[2rem]
+                                bg-blue-100/60
+                                blur-2xl
+                            "
+                        />
+
+
+                        <div
+                            className="
+                                relative
+                                overflow-hidden
+                                rounded-[2rem]
+                                border
+                                border-white
+                                bg-white
+                                p-2
+                                shadow-xl
+                            "
+                        >
+
+                            <img
+                                src="/src/assets/hero.png"
+                                alt="ADELINA KOST"
+                                className="
+                                    h-[360px]
+                                    w-full
+                                    rounded-[1.5rem]
+                                    object-cover
+                                    sm:h-[440px]
+                                "
+                            />
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            {/* =====================================================
+                KAMAR
+            ===================================================== */}
+
+            <section
+                id="kamar"
+                className="bg-white py-20"
+            >
+
+                <div
+                    className="
+                        mx-auto
+                        max-w-7xl
+                        px-4
+                        sm:px-6
+                        lg:px-8
+                    "
+                >
+
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            justify-between
+                            gap-5
+                            md:flex-row
+                            md:items-end
+                        "
+                    >
+
+                        <div>
+
+                            <p className="text-sm font-semibold text-blue-600">
+                                Pilihan kamar
+                            </p>
+
+
+                            <h2
+                                className="
+                                    mt-2
+                                    text-3xl
+                                    font-bold
+                                    tracking-tight
+                                    text-slate-900
+                                "
+                            >
+                                Temukan kamar yang sesuai
+                            </h2>
+
+
+                            <p
+                                className="
+                                    mt-3
+                                    max-w-2xl
+                                    text-sm
+                                    leading-6
+                                    text-slate-500
+                                    sm:text-base
+                                "
+                            >
+
+                                Pilih kamar berdasarkan bangunan,
+                                lantai, harga, dan ketersediaannya.
+
+                            </p>
+
+                        </div>
+
+
+                        <Link
+                            to="/kamar"
+                            className="
+                                inline-flex
+                                items-center
+                                gap-2
+                                text-sm
+                                font-semibold
+                                text-blue-600
+                                hover:text-blue-700
+                            "
+                        >
+
+                            Lihat semua kamar
+
+                            <ArrowRight size={16} />
+
+                        </Link>
+
+                    </div>
+
+
+                    <div
+                        className="
+                            mt-10
+                            grid
+                            gap-6
+                            md:grid-cols-2
+                        "
+                    >
+
+                        {/* =================================================
+                            BANGUNAN 1
+                        ================================================= */}
+
+                        <div
+                            className="
+                                rounded-2xl
+                                border
+                                border-slate-200
+                                bg-slate-50
+                                p-6
+                            "
+                        >
+
+                            <div>
+
+                                <div
+                                    className="
+                                        flex
+                                        h-11
+                                        w-11
+                                        items-center
+                                        justify-center
+                                        rounded-xl
+                                        bg-blue-100
+                                    "
+                                >
+
+                                    <BedDouble
+                                        size={21}
+                                        className="text-blue-600"
+                                    />
+
+                                </div>
+
+
+                                <h3
+                                    className="
+                                        mt-5
+                                        text-xl
+                                        font-bold
+                                        text-slate-900
+                                    "
+                                >
+                                    Bangunan 1
+                                </h3>
+
+
+                                <p
+                                    className="
+                                        mt-2
+                                        text-sm
+                                        leading-6
+                                        text-slate-500
+                                    "
+                                >
+
+                                    Pilihan kamar dari bangunan pertama
+                                    ADELINA KOST.
+
+                                </p>
+
+                            </div>
+
+
+                            <Link
+                                to="/kamar"
+                                className="
+                                    mt-6
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    rounded-xl
+                                    bg-white
+                                    px-4
+                                    py-2.5
+                                    text-sm
+                                    font-semibold
+                                    text-slate-700
+                                    shadow-sm
+                                    ring-1
+                                    ring-slate-200
+                                    transition
+                                    hover:bg-slate-50
+                                "
+                            >
+
+                                Lihat kamar
+
+                                <ArrowRight size={15} />
+
+                            </Link>
+
+                        </div>
+
+
+                        {/* =================================================
+                            BANGUNAN 2
+                        ================================================= */}
+
+                        <div
+                            className="
+                                rounded-2xl
+                                border
+                                border-slate-200
+                                bg-slate-50
+                                p-6
+                            "
+                        >
+
+                            <div>
+
+                                <div
+                                    className="
+                                        flex
+                                        h-11
+                                        w-11
+                                        items-center
+                                        justify-center
+                                        rounded-xl
+                                        bg-blue-100
+                                    "
+                                >
+
+                                    <BedDouble
+                                        size={21}
+                                        className="text-blue-600"
+                                    />
+
+                                </div>
+
+
+                                <h3
+                                    className="
+                                        mt-5
+                                        text-xl
+                                        font-bold
+                                        text-slate-900
+                                    "
+                                >
+                                    Bangunan 2
+                                </h3>
+
+
+                                <p
+                                    className="
+                                        mt-2
+                                        text-sm
+                                        leading-6
+                                        text-slate-500
+                                    "
+                                >
+
+                                    Pilihan kamar dari bangunan kedua
+                                    ADELINA KOST.
+
+                                </p>
+
+                            </div>
+
+
+                            <Link
+                                to="/kamar"
+                                className="
+                                    mt-6
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    rounded-xl
+                                    bg-white
+                                    px-4
+                                    py-2.5
+                                    text-sm
+                                    font-semibold
+                                    text-slate-700
+                                    shadow-sm
+                                    ring-1
+                                    ring-slate-200
+                                    transition
+                                    hover:bg-slate-50
+                                "
+                            >
+
+                                Lihat kamar
+
+                                <ArrowRight size={15} />
+
+                            </Link>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            {/* =====================================================
+                FASILITAS
+            ===================================================== */}
+
+            <section
+                id="fasilitas"
+                className="bg-slate-50 py-20"
+            >
+
+                <div
+                    className="
+                        mx-auto
+                        max-w-7xl
+                        px-4
+                        sm:px-6
+                        lg:px-8
+                    "
+                >
+
+                    <div className="max-w-2xl">
+
+                        <p className="text-sm font-semibold text-blue-600">
+                            Fasilitas
+                        </p>
+
+
+                        <h2
+                            className="
+                                mt-2
+                                text-3xl
+                                font-bold
+                                tracking-tight
+                                text-slate-900
+                            "
+                        >
+                            Fasilitas untuk kebutuhan sehari-hari
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-3
+                                text-sm
+                                leading-6
+                                text-slate-500
+                                sm:text-base
+                            "
+                        >
+
+                            ADELINA KOST menyediakan fasilitas
+                            yang dirancang agar penghuni dapat
+                            tinggal dengan nyaman.
+
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="
+                            mt-10
+                            grid
+                            gap-4
+                            sm:grid-cols-2
+                            lg:grid-cols-4
+                        "
+                    >
+
+                        <Facility
+                            icon={<BedDouble size={20} />}
+                            title="Spring Bed"
+                            description="Tempat tidur untuk kenyamanan penghuni."
+                        />
+
+
+                        <Facility
+                            icon={<Shirt size={20} />}
+                            title="Lemari"
+                            description="Lemari untuk menyimpan pakaian dan barang pribadi."
+                        />
+
+
+                        <Facility
+                            icon={<Wind size={20} />}
+                            title="Kipas Angin"
+                            description="Kipas angin untuk membantu menjaga sirkulasi udara."
+                        />
+
+
+                        <Facility
+                            icon={<ShieldCheck size={20} />}
+                            title="Kamar Mandi"
+                            description="Kamar mandi pribadi untuk kebutuhan penghuni."
+                        />
+
+
+                        <Facility
+                            icon={<Wifi size={20} />}
+                            title="WiFi"
+                            description="Internet untuk kebutuhan sehari-hari."
+                        />
+
+
+                        <Facility
+                            icon={<CookingPot size={20} />}
+                            title="Dapur Umum"
+                            description="Area dapur umum yang dapat digunakan penghuni."
+                        />
+
+
+                        <Facility
+                            icon={<Shirt size={20} />}
+                            title="Area Jemuran"
+                            description="Area jemuran untuk kebutuhan penghuni."
+                        />
+
+
+                        <Facility
+                            icon={<Car size={20} />}
+                            title="Area Parkir"
+                            description="Area parkir untuk kendaraan penghuni."
+                        />
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            {/* =====================================================
+                LOKASI
+            ===================================================== */}
+
+            <section
+                id="lokasi"
+                className="bg-white py-20"
+            >
+
+                <div
+                    className="
+                        mx-auto
+                        grid
+                        max-w-7xl
+                        gap-10
+                        px-4
+                        sm:px-6
+                        lg:grid-cols-2
+                        lg:px-8
+                    "
+                >
+
+                    <div>
+
+                        <p className="text-sm font-semibold text-blue-600">
+                            Lokasi
+                        </p>
+
+
+                        <h2
+                            className="
+                                mt-2
+                                text-3xl
+                                font-bold
+                                tracking-tight
+                                text-slate-900
+                            "
+                        >
+                            Tinggal di lokasi yang strategis
+                        </h2>
+
+
+                        <p
+                            className="
+                                mt-4
+                                text-sm
+                                leading-7
+                                text-slate-500
+                                sm:text-base
+                            "
+                        >
+
+                            ADELINA KOST berada di Jalan Srikandi,
+                            Pekanbaru, dengan akses yang mudah
+                            menuju berbagai fasilitas di sekitar kota.
+
+                        </p>
+
+
+                        <div className="mt-6 space-y-4">
+
+                            <div className="flex gap-3">
+
+                                <div
+                                    className="
+                                        flex
+                                        h-10
+                                        w-10
+                                        shrink-0
+                                        items-center
+                                        justify-center
+                                        rounded-xl
+                                        bg-blue-50
+                                    "
+                                >
+
+                                    <MapPin
+                                        size={18}
+                                        className="text-blue-600"
+                                    />
+
+                                </div>
+
+
+                                <div>
+
+                                    <p
+                                        className="
+                                            font-semibold
+                                            text-slate-800
+                                        "
+                                    >
+                                        Jalan Srikandi
+                                    </p>
+
+
+                                    <p
+                                        className="
+                                            mt-1
+                                            text-sm
+                                            text-slate-500
+                                        "
+                                    >
+                                        Pekanbaru, Riau
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            {/* =================================================
+                                BUTTON MAPS
+                            ================================================= */}
+
+                            <a
+                                href={GOOGLE_MAPS_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    rounded-xl
+                                    bg-blue-600
+                                    px-5
+                                    py-3
+                                    text-sm
+                                    font-semibold
+                                    text-white
+                                    shadow-sm
+                                    transition
+                                    hover:bg-blue-700
+                                "
+                            >
+
+                                <MapPin size={17} />
+
+                                Buka di Google Maps
+
+                                <ArrowRight size={16} />
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* =================================================
+                        LOCATION CARD
+                    ================================================= */}
+
+                    <div
+                        className="
+                            flex
+                            min-h-[320px]
+                            items-center
+                            justify-center
+                            rounded-3xl
+                            border
+                            border-slate-200
+                            bg-slate-100
+                        "
+                    >
+
+                        <div className="text-center">
+
+                            <MapPin
+                                size={40}
+                                className="mx-auto text-slate-400"
+                            />
+
+
+                            <p
+                                className="
+                                    mt-3
+                                    font-semibold
+                                    text-slate-700
+                                "
+                            >
+                                Lokasi ADELINA KOST
+                            </p>
+
+
+                            <p
+                                className="
+                                    mt-1
+                                    text-sm
+                                    text-slate-500
+                                "
+                            >
+                                Jalan Srikandi, Pekanbaru
+                            </p>
+
+
+                            <a
+                                href={GOOGLE_MAPS_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="
+                                    mt-5
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    rounded-xl
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    px-4
+                                    py-2.5
+                                    text-sm
+                                    font-semibold
+                                    text-blue-600
+                                    shadow-sm
+                                    transition
+                                    hover:bg-slate-50
+                                "
+                            >
+
+                                <MapPin size={16} />
+
+                                Lihat lokasi
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            {/* =====================================================
+                TENTANG
+            ===================================================== */}
+
+            <section
+                id="tentang"
+                className="bg-slate-950 py-20 text-white"
+            >
+
+                <div
+                    className="
+                        mx-auto
+                        max-w-4xl
+                        px-4
+                        text-center
+                        sm:px-6
+                        lg:px-8
+                    "
+                >
+
+                    <p className="text-sm font-semibold text-blue-400">
+                        Tentang ADELINA KOST
+                    </p>
+
+
+                    <h2
+                        className="
+                            mt-3
+                            text-3xl
+                            font-bold
+                            tracking-tight
+                            sm:text-4xl
+                        "
+                    >
+                        Hunian sederhana, nyaman, dan terkelola dengan baik.
+                    </h2>
+
+
+                    <p
+                        className="
+                            mx-auto
+                            mt-5
+                            max-w-2xl
+                            text-sm
+                            leading-7
+                            text-slate-400
+                            sm:text-base
+                        "
+                    >
+
+                        Kami menyediakan tempat tinggal yang nyaman
+                        dengan fasilitas yang dibutuhkan untuk menunjang
+                        aktivitas sehari-hari.
+
+                    </p>
+
+
+                    <Link
+                        to="/kamar"
+                        className="
+                            mt-8
+                            inline-flex
+                            items-center
+                            gap-2
+                            rounded-xl
+                            bg-blue-600
+                            px-5
+                            py-3.5
+                            text-sm
+                            font-semibold
+                            text-white
+                            transition
+                            hover:bg-blue-700
+                        "
+                    >
+
+                        Cari Kamar
+
+                        <ArrowRight size={17} />
+
+                    </Link>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    )
+
+}
+
+
+/* =========================================================
+   FEATURE ITEM
+========================================================= */
+
+function FeatureItem({ children }) {
+
+    return (
+
+        <div
+            className="
+                flex
+                items-center
+                gap-2
+                text-sm
+                text-slate-600
+            "
+        >
+
+            <CheckCircle2
+                size={17}
+                className="shrink-0 text-blue-600"
+            />
+
+            {children}
+
+        </div>
+
+    )
+
+}
+
+
+/* =========================================================
+   FACILITY COMPONENT
+========================================================= */
+
+function Facility({
+    icon,
+    title,
+    description,
+}) {
+
+    return (
+
+        <div
+            className="
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                p-5
+                shadow-sm
+                transition
+                hover:-translate-y-1
+                hover:shadow-md
+            "
+        >
+
+            <div
+                className="
+                    flex
+                    h-10
+                    w-10
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-blue-50
+                    text-blue-600
+                "
+            >
+
+                {icon}
+
+            </div>
+
+
+            <h3
+                className="
+                    mt-4
+                    font-semibold
+                    text-slate-800
+                "
+            >
+                {title}
+            </h3>
+
+
+            <p
+                className="
+                    mt-2
+                    text-sm
+                    leading-6
+                    text-slate-500
+                "
+            >
+                {description}
+            </p>
+
+        </div>
+
+    )
+
+}
+
+
+export default LandingPage

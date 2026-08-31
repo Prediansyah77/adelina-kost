@@ -6,7 +6,10 @@ import {
     createPayment,
     updatePayment,
     deletePayment,
-    getBillsForPayment
+    getBillsForPayment,
+    verifyPayment,
+    rejectPayment,
+    verifyBookingPayment
 } from "../services/paymentService";
 
 import jsPDF from "jspdf";
@@ -38,6 +41,30 @@ const Payments = () => {
     const [saving, setSaving] = useState(false);
 
     const [deleting, setDeleting] = useState(false);
+
+    // =====================================================
+    // VERIFIKASI PEMBAYARAN
+    // =====================================================
+
+    const [verifyingId, setVerifyingId] =
+        useState(null);
+
+    const [rejectingId, setRejectingId] =
+        useState(null);
+
+
+    // =====================================================
+    // MODAL REJECT
+    // =====================================================
+
+    const [showRejectModal, setShowRejectModal] =
+        useState(false);
+
+    const [rejectReason, setRejectReason] =
+        useState("");
+
+    const [paymentToReject, setPaymentToReject] =
+        useState(null);
 
 
     // =====================================================
@@ -460,11 +487,18 @@ const Payments = () => {
 
     const getTotalPaid = (billId) => {
 
+        // HANYA pembayaran VERIFIED yang dianggap
+        // sudah membayar tagihan.
+        // pending = menunggu verifikasi
+        // rejected = ditolak
+        // verified = dihitung sebagai pembayaran
         return payments
             .filter(
                 payment =>
                     Number(payment.bill_id) ===
-                    Number(billId)
+                    Number(billId) &&
+                    String(payment.status || "").toLowerCase() ===
+                    "verified"
             )
             .reduce(
                 (total, payment) =>
@@ -1156,20 +1190,34 @@ const Payments = () => {
                             .includes(keyword);
 
 
+                    // FILTER BULAN + TAHUN BERDASARKAN
+                    // TANGGAL PEMBAYARAN, BUKAN PERIODE TAGIHAN.
+                    // Contoh: pembayaran tanggal 30/08/2026
+                    // tetap muncul saat filter Agustus 2026
+                    // walaupun billing_month pada tagihannya berbeda.
+                    const paymentDate =
+                        payment.payment_date
+                            ? new Date(payment.payment_date)
+                            : null;
+
+                    const paymentDateIsValid =
+                        paymentDate &&
+                        !Number.isNaN(
+                            paymentDate.getTime()
+                        );
+
                     const matchesMonth =
                         !filterMonth ||
-                        Number(
-                            payment.billing_month
-                        ) ===
-                        Number(filterMonth);
+                        (paymentDateIsValid &&
+                            paymentDate.getMonth() + 1 ===
+                            Number(filterMonth));
 
 
                     const matchesYear =
                         !filterYear ||
-                        Number(
-                            payment.billing_year
-                        ) ===
-                        Number(filterYear);
+                        (paymentDateIsValid &&
+                            paymentDate.getFullYear() ===
+                            Number(filterYear));
 
 
                     return (
@@ -1187,6 +1235,275 @@ const Payments = () => {
             filterMonth,
             filterYear
         ]);
+
+    // =====================================================
+    // VERIFY PEMBAYARAN
+    // =====================================================
+
+    const handleVerify = async (payment) => {
+
+        if (!payment) {
+            return;
+        }
+
+
+        // =====================================================
+        // CEK JENIS PEMBAYARAN
+        // =====================================================
+        //
+        // booking_id ada
+        //     → pembayaran booking
+        //
+        // booking_id NULL
+        //     → pembayaran tagihan biasa
+        //
+        // =====================================================
+
+        const isBookingPayment =
+            payment.booking_id !== null &&
+            payment.booking_id !== undefined &&
+            payment.booking_id !== "";
+
+
+        const confirmed =
+            window.confirm(
+                `Verifikasi pembayaran ${payment.tenant_name || ""
+                } sebesar ${formatRupiah(payment.amount)
+                }?`
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        try {
+
+            setVerifyingId(
+                payment.id
+            );
+
+            setError("");
+
+
+            // =================================================
+            // PILIH ENDPOINT SESUAI JENIS PEMBAYARAN
+            // =================================================
+
+            let response;
+
+
+            if (isBookingPayment) {
+
+                console.log(
+                    "VERIFY BOOKING PAYMENT:",
+                    payment.id
+                );
+
+
+                response =
+                    await verifyBookingPayment(
+                        payment.id
+                    );
+
+            } else {
+
+                console.log(
+                    "VERIFY BILL PAYMENT:",
+                    payment.id
+                );
+
+
+                response =
+                    await verifyPayment(
+                        payment.id
+                    );
+
+            }
+
+
+            // =================================================
+            // RESPONSE ERROR
+            // =================================================
+
+            if (!response?.success) {
+
+                setError(
+                    response?.message ||
+                    "Gagal memverifikasi pembayaran."
+                );
+
+                return;
+
+            }
+
+
+            // =================================================
+            // SUCCESS
+            // =================================================
+
+            alert(
+                response?.message ||
+                "Pembayaran berhasil diverifikasi."
+            );
+
+
+            // =================================================
+            // REFRESH DATA
+            // =================================================
+
+            await fetchData();
+
+
+        } catch (err) {
+
+            console.error(
+                "VERIFY PAYMENT ERROR:",
+                err
+            );
+
+
+            setError(
+                err.response?.data?.message ||
+                err.message ||
+                "Gagal memverifikasi pembayaran."
+            );
+
+
+        } finally {
+
+            setVerifyingId(
+                null
+            );
+
+        }
+
+    };
+
+
+    // =====================================================
+    // BUKA MODAL REJECT
+    // =====================================================
+
+    const openReject = (payment) => {
+
+        setPaymentToReject(
+            payment
+        );
+
+        setRejectReason("");
+
+        setError("");
+
+        setShowRejectModal(
+            true
+        );
+    };
+
+
+    // =====================================================
+    // TUTUP MODAL REJECT
+    // =====================================================
+
+    const closeReject = () => {
+
+        if (rejectingId) {
+            return;
+        }
+
+        setShowRejectModal(
+            false
+        );
+
+        setPaymentToReject(
+            null
+        );
+
+        setRejectReason("");
+
+    };
+
+
+    // =====================================================
+    // REJECT PEMBAYARAN
+    // =====================================================
+
+    const handleReject = async () => {
+
+        if (!paymentToReject) {
+            return;
+        }
+
+        if (!rejectReason.trim()) {
+
+            setError(
+                "Alasan penolakan wajib diisi."
+            );
+
+            return;
+        }
+
+        try {
+
+            setRejectingId(
+                paymentToReject.id
+            );
+
+            setError("");
+
+            const response =
+                await rejectPayment(
+                    paymentToReject.id,
+                    rejectReason.trim()
+                );
+
+            if (!response.success) {
+
+                setError(
+                    response.message ||
+                    "Gagal menolak pembayaran."
+                );
+
+                return;
+            }
+
+            setShowRejectModal(
+                false
+            );
+
+            setPaymentToReject(
+                null
+            );
+
+            setRejectReason("");
+
+            alert(
+                response.message ||
+                "Pembayaran berhasil ditolak."
+            );
+
+            await fetchData();
+
+        } catch (err) {
+
+            console.error(
+                "REJECT PAYMENT ERROR:",
+                err
+            );
+
+            setError(
+                err.response?.data?.message ||
+                err.message ||
+                "Gagal menolak pembayaran."
+            );
+
+        } finally {
+
+            setRejectingId(null);
+
+        }
+    };
 
 
     // =====================================================
@@ -1235,8 +1552,19 @@ const Payments = () => {
     const recapData =
         useMemo(() => {
 
+            // Rekap uang hanya menghitung pembayaran VERIFIED.
+            // Pending/rejected tidak boleh dianggap sebagai uang
+            // yang sudah diterima oleh ADELINA KOST.
+            const verifiedPayments =
+                filteredPayments.filter(
+                    payment =>
+                        String(payment.status || "").toLowerCase() ===
+                        "verified"
+                );
+
+
             const total =
-                filteredPayments.reduce(
+                verifiedPayments.reduce(
                     (
                         sum,
                         payment
@@ -1250,12 +1578,12 @@ const Payments = () => {
 
 
             const cash =
-                filteredPayments.reduce(
+                verifiedPayments.reduce(
                     (
                         sum,
                         payment
                     ) =>
-                        payment.payment_method ===
+                        String(payment.payment_method || "").toLowerCase() ===
                             "cash"
                             ? sum +
                             Number(
@@ -1268,12 +1596,12 @@ const Payments = () => {
 
 
             const transfer =
-                filteredPayments.reduce(
+                verifiedPayments.reduce(
                     (
                         sum,
                         payment
                     ) =>
-                        payment.payment_method ===
+                        String(payment.payment_method || "").toLowerCase() ===
                             "transfer"
                             ? sum +
                             Number(
@@ -1286,7 +1614,7 @@ const Payments = () => {
 
 
             const paidCount =
-                filteredPayments.filter(
+                verifiedPayments.filter(
                     payment =>
                         payment.bill_status ===
                         "paid"
@@ -1294,7 +1622,7 @@ const Payments = () => {
 
 
             const unpaidCount =
-                filteredPayments.filter(
+                verifiedPayments.filter(
                     payment =>
                         payment.bill_status !==
                         "paid"
@@ -3457,8 +3785,15 @@ const Payments = () => {
                                 ...new Set([
                                     currentYear,
                                     ...payments.map(
-                                        payment =>
-                                            payment.billing_year
+                                        payment => {
+                                            const date = payment.payment_date
+                                                ? new Date(payment.payment_date)
+                                                : null;
+
+                                            return date && !Number.isNaN(date.getTime())
+                                                ? String(date.getFullYear())
+                                                : String(payment.billing_year || "");
+                                        }
                                     )
                                 ])
                             ]
@@ -3663,20 +3998,50 @@ const Payments = () => {
 
                                             <td className="px-4 py-4">
 
-                                                <span
-                                                    className={`rounded-full px-3 py-1 text-xs font-semibold ${payment.bill_status ===
-                                                        "paid"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : "bg-yellow-100 text-yellow-700"
-                                                        }`}
-                                                >
+                                                {(() => {
 
-                                                    {payment.bill_status ===
-                                                        "paid"
-                                                        ? "Lunas"
-                                                        : "Belum Lunas"}
+                                                    const paymentStatus =
+                                                        String(payment.status || "")
+                                                            .toLowerCase();
 
-                                                </span>
+                                                    const isPending =
+                                                        paymentStatus === "pending";
+
+                                                    const isRejected =
+                                                        paymentStatus === "rejected";
+
+                                                    const isVerified =
+                                                        paymentStatus === "verified";
+
+                                                    const statusClass =
+                                                        isPending
+                                                            ? "bg-yellow-100 text-yellow-700"
+                                                            : isRejected
+                                                                ? "bg-red-100 text-red-700"
+                                                                : isVerified && payment.bill_status === "paid"
+                                                                    ? "bg-green-100 text-green-700"
+                                                                    : "bg-blue-100 text-blue-700";
+
+                                                    const statusLabel =
+                                                        isPending
+                                                            ? "Menunggu Verifikasi"
+                                                            : isRejected
+                                                                ? "Ditolak"
+                                                                : isVerified && payment.bill_status === "paid"
+                                                                    ? "Lunas"
+                                                                    : isVerified
+                                                                        ? "Terverifikasi"
+                                                                        : "Belum Diproses";
+
+                                                    return (
+                                                        <span
+                                                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}
+                                                        >
+                                                            {statusLabel}
+                                                        </span>
+                                                    );
+
+                                                })()}
 
                                             </td>
 
@@ -3687,6 +4052,96 @@ const Payments = () => {
 
                                                 <div className="flex flex-wrap gap-2">
 
+                                                    {/* =================================================
+            VERIFIKASI PEMBAYARAN
+
+            HANYA MUNCUL JIKA STATUS = pending
+            ================================================= */}
+
+                                                    {String(
+                                                        payment.status || ""
+                                                    ).trim().toLowerCase() === "pending" && (
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleVerify(
+                                                                        payment
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    verifyingId === payment.id ||
+                                                                    rejectingId === payment.id
+                                                                }
+                                                                className="
+                    rounded-lg
+                    bg-emerald-100
+                    px-3
+                    py-1.5
+                    text-xs
+                    font-semibold
+                    text-emerald-700
+                    hover:bg-emerald-200
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
+                "
+                                                            >
+
+                                                                {verifyingId === payment.id
+                                                                    ? "Memverifikasi..."
+                                                                    : "Verifikasi"}
+
+                                                            </button>
+
+                                                        )}
+
+
+                                                    {/* =================================================
+            TOLAK PEMBAYARAN
+
+            HANYA MUNCUL JIKA STATUS = pending
+            ================================================= */}
+
+                                                    {String(
+                                                        payment.status || ""
+                                                    ).trim().toLowerCase() === "pending" && (
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    openReject(
+                                                                        payment
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    verifyingId === payment.id ||
+                                                                    rejectingId === payment.id
+                                                                }
+                                                                className="
+                    rounded-lg
+                    bg-red-100
+                    px-3
+                    py-1.5
+                    text-xs
+                    font-semibold
+                    text-red-700
+                    hover:bg-red-200
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
+                "
+                                                            >
+
+                                                                Tolak
+
+                                                            </button>
+
+                                                        )}
+
+
+                                                    {/* =================================================
+            DETAIL
+            ================================================= */}
+
                                                     <button
                                                         type="button"
                                                         onClick={() =>
@@ -3694,11 +4149,26 @@ const Payments = () => {
                                                                 payment
                                                             )
                                                         }
-                                                        className="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200"
+                                                        className="
+                rounded-lg
+                bg-blue-100
+                px-3
+                py-1.5
+                text-xs
+                font-semibold
+                text-blue-700
+                hover:bg-blue-200
+            "
                                                     >
+
                                                         Detail
+
                                                     </button>
 
+
+                                                    {/* =================================================
+            EDIT
+            ================================================= */}
 
                                                     <button
                                                         type="button"
@@ -3707,11 +4177,26 @@ const Payments = () => {
                                                                 payment
                                                             )
                                                         }
-                                                        className="rounded-lg bg-yellow-100 px-3 py-1.5 text-xs font-semibold text-yellow-700 hover:bg-yellow-200"
+                                                        className="
+                rounded-lg
+                bg-yellow-100
+                px-3
+                py-1.5
+                text-xs
+                font-semibold
+                text-yellow-700
+                hover:bg-yellow-200
+            "
                                                     >
+
                                                         Edit
+
                                                     </button>
 
+
+                                                    {/* =================================================
+            STRUK
+            ================================================= */}
 
                                                     <button
                                                         type="button"
@@ -3720,11 +4205,26 @@ const Payments = () => {
                                                                 payment
                                                             )
                                                         }
-                                                        className="rounded-lg bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-200"
+                                                        className="
+                rounded-lg
+                bg-green-100
+                px-3
+                py-1.5
+                text-xs
+                font-semibold
+                text-green-700
+                hover:bg-green-200
+            "
                                                     >
+
                                                         Struk
+
                                                     </button>
 
+
+                                                    {/* =================================================
+            HAPUS
+            ================================================= */}
 
                                                     <button
                                                         type="button"
@@ -3733,9 +4233,20 @@ const Payments = () => {
                                                                 payment
                                                             )
                                                         }
-                                                        className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200"
+                                                        className="
+                rounded-lg
+                bg-red-100
+                px-3
+                py-1.5
+                text-xs
+                font-semibold
+                text-red-700
+                hover:bg-red-200
+            "
                                                     >
+
                                                         Hapus
+
                                                     </button>
 
                                                 </div>
@@ -4413,6 +4924,35 @@ const Payments = () => {
                                             "-"
                                         }
                                     </p>
+
+                                </div>
+
+                                {/* BUKTI PEMBAYARAN */}
+                                <div>
+
+                                    <p className="text-xs text-gray-500">
+                                        Bukti Pembayaran
+                                    </p>
+
+                                    {selectedPayment.proof_file ? (
+
+                                        <div className="mt-2 overflow-hidden rounded-lg border bg-gray-50">
+
+                                            <img
+                                                src={`http://localhost:5000/uploads/payment-proofs/${selectedPayment.proof_file}`}
+                                                alt="Bukti pembayaran"
+                                                className="max-h-96 w-full object-contain"
+                                            />
+
+                                        </div>
+
+                                    ) : (
+
+                                        <div className="mt-2 rounded-lg bg-gray-50 p-4 text-sm text-gray-500">
+                                            Tidak ada bukti pembayaran.
+                                        </div>
+
+                                    )}
 
                                 </div>
 

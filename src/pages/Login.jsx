@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     LockKeyhole,
     UserRound,
@@ -35,24 +35,61 @@ function Login() {
 
             const { token, user } = response.data.data;
 
-            // Simpan token
+            // =====================================================
+            // SIMPAN TOKEN
+            // =====================================================
+
             localStorage.setItem("token", token);
 
-            // Simpan data user
-            localStorage.setItem("user", JSON.stringify(user));
+            // =====================================================
+            // SIMPAN DATA USER
+            // =====================================================
 
-            // Masuk dashboard
-            navigate("/admin/dashboard");
+            localStorage.setItem(
+                "user",
+                JSON.stringify(user)
+            );
+
+            // =====================================================
+            // REDIRECT BERDASARKAN ROLE
+            // =====================================================
+
+            if (user.role === "admin") {
+
+                navigate("/admin/dashboard");
+
+            } else if (user.role === "penghuni") {
+
+                navigate("/tenant/dashboard");
+
+            } else {
+
+                // Jika role tidak dikenal
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+
+                setError(
+                    "Role pengguna tidak dikenali"
+                );
+
+            }
 
         } catch (error) {
-            console.error("Login Error:", error);
+
+            console.error(
+                "Login Error:",
+                error
+            );
 
             setError(
                 error.response?.data?.message ||
                 "Gagal melakukan login"
             );
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
@@ -451,7 +488,7 @@ function Login() {
                                 <div className="login-slide-up login-delay-1 mb-8">
 
                                     <p className="mb-2 text-sm font-medium text-blue-600">
-                                        ADMINISTRATOR
+                                        LOGIN
                                     </p>
 
                                     <h2 className="text-2xl font-bold text-slate-800 sm:text-3xl">
@@ -460,7 +497,7 @@ function Login() {
 
                                     <p className="mt-2 text-sm leading-6 text-slate-500">
                                         Silakan masuk untuk mengakses
-                                        dashboard ADELINA KOST.
+                                        sistem ADELINA KOST.
                                     </p>
 
                                 </div>
@@ -641,7 +678,7 @@ function Login() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    Masuk ke Dashboard
+                                                    Masuk ke Sistem
 
                                                     <ArrowRight
                                                         size={18}
@@ -658,6 +695,28 @@ function Login() {
                                 </form>
 
 
+                                {/* =====================================================
+                                    REGISTER
+                                ===================================================== */}
+
+                                <div className="login-fade login-delay-5 mt-6 text-center">
+
+                                    <p className="text-sm text-slate-500">
+
+                                        Belum punya akun?
+
+                                        <Link
+                                            to="/register"
+                                            className="ml-1 font-semibold text-blue-600 transition-colors duration-300 hover:text-blue-700 hover:underline"
+                                        >
+                                            Daftar Akun
+                                        </Link>
+
+                                    </p>
+
+                                </div>
+
+
                                 {/* Security Info */}
 
                                 <div className="login-fade login-delay-5 mt-7 flex items-center justify-center gap-2 border-t border-slate-100 pt-6">
@@ -668,7 +727,7 @@ function Login() {
                                     />
 
                                     <p className="text-xs text-slate-400">
-                                        Akses aman untuk Administrator
+                                        Akses aman berdasarkan hak akses pengguna
                                     </p>
 
                                 </div>
