@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+    Link,
+    useNavigate,
+    useParams
+} from "react-router-dom";
+
 import { getRoomById } from "../../services/roomService";
 
 
@@ -13,8 +18,15 @@ function RoomDetail() {
 
     const navigate = useNavigate();
 
+
+    // =====================================================
+    // STATE ROOM
+    // =====================================================
+
     const [room, setRoom] = useState(null);
+
     const [loading, setLoading] = useState(true);
+
     const [error, setError] = useState("");
 
 
@@ -29,18 +41,17 @@ function RoomDetail() {
             try {
 
                 setLoading(true);
+
                 setError("");
+
 
                 const response =
                     await getRoomById(id);
 
 
-                /*
-                 * Bisa menerima:
-                 *
-                 * 1. { success: true, data: {...} }
-                 * 2. object kamar langsung
-                 */
+                // Bisa menerima:
+                // 1. { success: true, data: {...} }
+                // 2. object kamar langsung
 
                 const roomData =
                     response?.data ?? response;
@@ -63,6 +74,7 @@ function RoomDetail() {
                     "Room Detail Error:",
                     error
                 );
+
 
                 setError(
                     error.message ||
@@ -96,7 +108,9 @@ function RoomDetail() {
                 currency: "IDR",
                 maximumFractionDigits: 0,
             }
-        ).format(price);
+        ).format(
+            Number(price) || 0
+        );
 
     };
 
@@ -108,16 +122,32 @@ function RoomDetail() {
     const getStatusLabel = (status) => {
 
         if (status === "available") {
+
             return "Tersedia";
+
         }
+
 
         if (status === "occupied") {
+
             return "Terisi";
+
         }
 
+
         if (status === "inactive") {
+
             return "Tidak Aktif";
+
         }
+
+
+        if (status === "booked") {
+
+            return "Sedang Dibooking";
+
+        }
+
 
         return status || "-";
 
@@ -136,11 +166,20 @@ function RoomDetail() {
 
         }
 
+
         if (status === "occupied") {
 
             return "bg-red-100 text-red-700";
 
         }
+
+
+        if (status === "booked") {
+
+            return "bg-amber-100 text-amber-700";
+
+        }
+
 
         return "bg-slate-200 text-slate-600";
 
@@ -148,22 +187,10 @@ function RoomDetail() {
 
 
     // =====================================================
-    // PESAN KAMAR
-    // =====================================================
-    //
-    // ALUR:
-    //
-    // Belum login
-    //      ↓
-    // /login
-    //
-    // Sudah login
-    //      ↓
-    // /tenant/pengajuan-kamar?roomId=...
-    //
+    // CEK LOGIN UNTUK BOOKING
     // =====================================================
 
-    const handlePesanKamar = () => {
+    const checkLogin = () => {
 
         const token =
             localStorage.getItem("token");
@@ -172,25 +199,82 @@ function RoomDetail() {
             localStorage.getItem("user");
 
 
-        // =================================================
-        // BELUM LOGIN
-        // =================================================
-
-        if (!token || !userStorage) {
+        if (
+            !token ||
+            !userStorage
+        ) {
 
             navigate("/login");
+
+            return false;
+
+        }
+
+
+        return true;
+
+    };
+
+
+    // =====================================================
+    // PESAN KAMAR DENGAN DP
+    //
+    // LANGSUNG KE HALAMAN PEMBAYARAN DP
+    //
+    // TIDAK LAGI MELALUI:
+    // /tenant/pengajuan-kamar
+    // =====================================================
+
+    const handleBookingDP = () => {
+
+        if (!checkLogin()) {
 
             return;
 
         }
 
 
-        // =================================================
-        // SUDAH LOGIN
-        // =================================================
+        if (!room?.id) {
+
+            return;
+
+        }
+
 
         navigate(
-            `/tenant/pengajuan-kamar?roomId=${room.id}`
+            `/tenant/pembayaran-booking?roomId=${room.id}&paymentType=dp`
+        );
+
+    };
+
+
+    // =====================================================
+    // PESAN KAMAR TANPA DP
+    //
+    // LANGSUNG KE HALAMAN PEMBAYARAN FULL
+    //
+    // TIDAK LAGI MELALUI:
+    // /tenant/pengajuan-kamar
+    // =====================================================
+
+    const handleBookingLunas = () => {
+
+        if (!checkLogin()) {
+
+            return;
+
+        }
+
+
+        if (!room?.id) {
+
+            return;
+
+        }
+
+
+        navigate(
+            `/tenant/pembayaran-full?roomId=${room.id}`
         );
 
     };
@@ -204,7 +288,12 @@ function RoomDetail() {
 
         return (
 
-            <div className="min-h-screen bg-slate-50">
+            <div
+                className="
+                    min-h-[70vh]
+                    bg-slate-50
+                "
+            >
 
                 <div
                     className="
@@ -258,11 +347,19 @@ function RoomDetail() {
     // ERROR
     // =====================================================
 
-    if (error || !room) {
+    if (
+        error ||
+        !room
+    ) {
 
         return (
 
-            <div className="min-h-screen bg-slate-50">
+            <div
+                className="
+                    min-h-[70vh]
+                    bg-slate-50
+                "
+            >
 
                 <div
                     className="
@@ -354,8 +451,12 @@ function RoomDetail() {
 
     return (
 
-        <div className="min-h-screen bg-slate-50">
-
+        <div
+            className="
+                min-h-screen
+                bg-slate-50
+            "
+        >
 
             {/* =================================================
                 MAIN
@@ -574,6 +675,7 @@ function RoomDetail() {
                                         🏢
                                     </span>
 
+
                                     <div>
 
                                         <p
@@ -584,6 +686,7 @@ function RoomDetail() {
                                         >
                                             Bangunan
                                         </p>
+
 
                                         <p
                                             className="
@@ -627,6 +730,7 @@ function RoomDetail() {
                                         📍
                                     </span>
 
+
                                     <div>
 
                                         <p
@@ -637,6 +741,7 @@ function RoomDetail() {
                                         >
                                             Lantai
                                         </p>
+
 
                                         <p
                                             className="
@@ -702,6 +807,7 @@ function RoomDetail() {
                                         )}
                                     </p>
 
+
                                     <span
                                         className="
                                             text-sm
@@ -741,7 +847,6 @@ function RoomDetail() {
                                         gap-3
                                     "
                                 >
-
 
                                     {/* SPRING BED */}
 
@@ -975,31 +1080,90 @@ function RoomDetail() {
                                 ACTION
                             ================================================= */}
 
-                            <div className="mt-8">
+                            <div
+                                className="
+                                    mt-8
+                                    space-y-3
+                                "
+                            >
 
-                                {room.status ===
-                                    "available" ? (
+                                {room.status === "available" ? (
 
-                                    <button
-                                        type="button"
-                                        onClick={handlePesanKamar}
-                                        className="
-                                            w-full
-                                            rounded-xl
-                                            bg-blue-600
-                                            px-5
-                                            py-3.5
-                                            text-sm
-                                            font-bold
-                                            text-white
-                                            shadow-sm
-                                            transition
-                                            hover:bg-blue-700
-                                            hover:shadow-md
-                                        "
-                                    >
-                                        Pesan Kamar
-                                    </button>
+                                    <>
+
+                                        {/* =====================================
+                                            BOOKING DENGAN DP
+                                        ===================================== */}
+
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                handleBookingDP
+                                            }
+                                            className="
+                                                w-full
+                                                rounded-xl
+                                                bg-blue-600
+                                                px-5
+                                                py-3.5
+                                                text-sm
+                                                font-bold
+                                                text-white
+                                                shadow-sm
+                                                transition
+                                                hover:bg-blue-700
+                                                hover:shadow-md
+                                            "
+                                        >
+                                            Pesan Kamar dengan DP
+                                        </button>
+
+
+                                        {/* =====================================
+                                            BOOKING TANPA DP
+                                        ===================================== */}
+
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                handleBookingLunas
+                                            }
+                                            className="
+                                                w-full
+                                                rounded-xl
+                                                border
+                                                border-blue-200
+                                                bg-white
+                                                px-5
+                                                py-3.5
+                                                text-sm
+                                                font-bold
+                                                text-blue-600
+                                                shadow-sm
+                                                transition
+                                                hover:bg-blue-50
+                                            "
+                                        >
+                                            Pesan Kamar Tanpa DP
+                                        </button>
+
+
+                                        {/* INFO */}
+
+                                        <p
+                                            className="
+                                                pt-1
+                                                text-center
+                                                text-xs
+                                                leading-5
+                                                text-slate-400
+                                            "
+                                        >
+                                            Pilih metode pembayaran sesuai
+                                            kebutuhan Anda.
+                                        </p>
+
+                                    </>
 
                                 ) : (
 
@@ -1022,7 +1186,6 @@ function RoomDetail() {
                                 )}
 
                             </div>
-
 
                         </div>
 

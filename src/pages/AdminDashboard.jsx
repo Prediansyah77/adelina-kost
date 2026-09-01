@@ -810,11 +810,31 @@ function AdminDashboard() {
     // MONTHLY PAYMENTS
     // =================================================
 
+    // =====================================================
+    // MONTHLY VERIFIED PAYMENTS
+    // =====================================================
+    // Hanya pembayaran yang SUDAH DIVERIFIKASI admin
+    // yang dianggap sebagai uang masuk.
+    //
+    // pending  -> belum menjadi pendapatan
+    // rejected -> bukan pendapatan
+    // verified -> pendapatan
+    // =====================================================
+
     const monthlyPayments =
         useMemo(() => {
 
             return payments.filter(
                 payment => {
+
+                    // Hanya pembayaran verified
+                    if (
+                        String(
+                            payment.status || ''
+                        ).toLowerCase() !== 'verified'
+                    ) {
+                        return false
+                    }
 
                     if (
                         !payment.payment_date
@@ -822,12 +842,10 @@ function AdminDashboard() {
                         return false
                     }
 
-
                     const date =
                         new Date(
                             payment.payment_date
                         )
-
 
                     return (
                         date.getMonth() + 1 ===
@@ -987,6 +1005,10 @@ function AdminDashboard() {
     // TOTAL PAID PER BILL
     // =================================================
 
+    // =====================================================
+    // TOTAL VERIFIED PAID PER BILL
+    // =====================================================
+
     const getTotalPaidForBill =
         (billId) => {
 
@@ -998,18 +1020,25 @@ function AdminDashboard() {
                 return 0
             }
 
-
             return payments.reduce(
                 (
                     total,
                     payment
                 ) => {
 
+                    // Pending dan rejected tidak dihitung
+                    if (
+                        String(
+                            payment.status || ''
+                        ).toLowerCase() !== 'verified'
+                    ) {
+                        return total
+                    }
+
                     const paymentBillId =
                         getPaymentBillId(
                             payment
                         )
-
 
                     if (
                         paymentBillId === null ||
@@ -1020,11 +1049,8 @@ function AdminDashboard() {
                             billId
                         )
                     ) {
-
                         return total
-
                     }
-
 
                     return (
                         total +
@@ -1421,10 +1447,25 @@ function AdminDashboard() {
                 // INCOME
                 // =========================================
 
+                // =========================================
+                // INCOME
+                // =========================================
+                // Hanya pembayaran verified yang menjadi
+                // pendapatan aktual.
+                // =========================================
+
                 const income =
                     payments
                         .filter(
                             payment => {
+
+                                if (
+                                    String(
+                                        payment.status || ''
+                                    ).toLowerCase() !== 'verified'
+                                ) {
+                                    return false
+                                }
 
                                 if (
                                     !payment.payment_date
@@ -1432,12 +1473,10 @@ function AdminDashboard() {
                                     return false
                                 }
 
-
                                 const paymentDate =
                                     new Date(
                                         payment.payment_date
                                     )
-
 
                                 return (
                                     paymentDate.getMonth() + 1 ===
@@ -1457,8 +1496,7 @@ function AdminDashboard() {
                                 return (
                                     total +
                                     Number(
-                                        payment.amount ||
-                                        0
+                                        payment.amount || 0
                                     )
                                 )
 
@@ -2547,8 +2585,23 @@ function AdminDashboard() {
                                         </p>
 
 
-                                        <span className="mt-1 inline-block rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
-                                            Diterima
+                                        <span
+                                            className={`mt-1 inline-block rounded-full px-2.5 py-1 text-[11px] font-medium ${payment.status === "pending"
+                                                ? "bg-yellow-50 text-yellow-700"
+                                                : payment.status === "verified"
+                                                    ? "bg-emerald-50 text-emerald-700"
+                                                    : payment.status === "rejected"
+                                                        ? "bg-red-50 text-red-700"
+                                                        : "bg-slate-100 text-slate-600"
+                                                }`}
+                                        >
+                                            {payment.status === "pending"
+                                                ? "Menunggu Verifikasi"
+                                                : payment.status === "verified"
+                                                    ? "Diterima"
+                                                    : payment.status === "rejected"
+                                                        ? "Ditolak"
+                                                        : payment.status}
                                         </span>
 
                                     </div>

@@ -7,14 +7,11 @@ import {
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
 import ProtectedRoute from "./components/ProtectedRoute";
-
 import PublicLayout from "./layouts/PublicLayout";
 import LandingPage from "./pages/public/LandingPage";
 import PublicRooms from "./pages/public/PublicRooms";
 import RoomDetail from "./pages/public/RoomDetail";
-
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import Rooms from "./pages/Rooms";
@@ -28,7 +25,6 @@ import Payments from "./pages/Payments";
 import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
 import BankAccounts from "./pages/BankAccounts";
-
 import Facilities from "./pages/public/Facilities";
 import Location from "./pages/public/Location";
 import About from "./pages/public/About";
@@ -40,6 +36,7 @@ import About from "./pages/public/About";
 import TenantDashboard from "./pages/tenant/TenantDashboard";
 import TenantRoomApplication from "./pages/tenant/TenantRoomApplication";
 import TenantBookingPayment from "./pages/tenant/TenantBookingPayment";
+import TenantFullPayment from "./pages/tenant/TenantFullPayment";
 
 
 // =====================================================
@@ -312,7 +309,9 @@ function App() {
             }
           >
 
-            {/* DASHBOARD */}
+            {/* =================================================
+                DASHBOARD
+                ================================================= */}
 
             <Route
               path="dashboard"
@@ -320,7 +319,9 @@ function App() {
             />
 
 
-            {/* BUILDINGS */}
+            {/* =================================================
+                BUILDINGS
+                ================================================= */}
 
             <Route
               path="buildings"
@@ -328,7 +329,9 @@ function App() {
             />
 
 
-            {/* FLOORS */}
+            {/* =================================================
+                FLOORS
+                ================================================= */}
 
             <Route
               path="floors"
@@ -336,7 +339,9 @@ function App() {
             />
 
 
-            {/* ROOMS */}
+            {/* =================================================
+                ROOMS
+                ================================================= */}
 
             <Route
               path="rooms"
@@ -344,7 +349,9 @@ function App() {
             />
 
 
-            {/* TENANTS */}
+            {/* =================================================
+                TENANTS
+                ================================================= */}
 
             <Route
               path="tenants"
@@ -352,7 +359,9 @@ function App() {
             />
 
 
-            {/* CONTRACTS */}
+            {/* =================================================
+                CONTRACTS
+                ================================================= */}
 
             <Route
               path="contracts"
@@ -360,7 +369,9 @@ function App() {
             />
 
 
-            {/* HISTORY */}
+            {/* =================================================
+                HISTORY
+                ================================================= */}
 
             <Route
               path="history"
@@ -368,7 +379,9 @@ function App() {
             />
 
 
-            {/* BILLS */}
+            {/* =================================================
+                BILLS
+                ================================================= */}
 
             <Route
               path="bills"
@@ -376,7 +389,9 @@ function App() {
             />
 
 
-            {/* PAYMENTS */}
+            {/* =================================================
+                PAYMENTS
+                ================================================= */}
 
             <Route
               path="payments"
@@ -384,7 +399,9 @@ function App() {
             />
 
 
-            {/* EXPENSES */}
+            {/* =================================================
+                EXPENSES
+                ================================================= */}
 
             <Route
               path="expenses"
@@ -392,7 +409,9 @@ function App() {
             />
 
 
-            {/* BANK ACCOUNTS */}
+            {/* =================================================
+                BANK ACCOUNTS
+                ================================================= */}
 
             <Route
               path="bank-accounts"
@@ -400,7 +419,9 @@ function App() {
             />
 
 
-            {/* REPORTS */}
+            {/* =================================================
+                REPORTS
+                ================================================= */}
 
             <Route
               path="reports"
@@ -422,6 +443,10 @@ function App() {
           element={<ProtectedRoute />}
         >
 
+          {/* ===================================================
+              TENANT DASHBOARD
+              =================================================== */}
+
           <Route
             path="/tenant"
             element={
@@ -435,6 +460,7 @@ function App() {
 
             {/* =================================================
                 DASHBOARD
+
                 /tenant/dashboard
                 ================================================= */}
 
@@ -448,7 +474,7 @@ function App() {
 
           {/* ===================================================
               PENGAJUAN KAMAR
-              
+
               /tenant/pengajuan-kamar?roomId=13
               =================================================== */}
 
@@ -465,9 +491,31 @@ function App() {
 
 
           {/* ===================================================
-              PEMBAYARAN BOOKING
+              PEMBAYARAN BOOKING - AWAL / DP
 
-              /tenant/pembayaran-booking/:bookingId
+              Belum ada bookingId.
+
+              Contoh:
+              /tenant/pembayaran-booking?roomId=13&paymentType=dp
+              =================================================== */}
+
+          <Route
+            path="/tenant/pembayaran-booking"
+            element={
+              <RoleProtectedRoute
+                allowedRole="penghuni"
+              >
+                <TenantBookingPayment />
+              </RoleProtectedRoute>
+            }
+          />
+
+
+          {/* ===================================================
+              PEMBAYARAN BOOKING - BOOKING SUDAH ADA
+
+              Digunakan ketika bookingId sudah dibuat
+              setelah pembayaran DP berhasil dibuat.
 
               Contoh:
               /tenant/pembayaran-booking/15
@@ -498,6 +546,24 @@ function App() {
               to="/login"
               replace
             />
+          }
+        />
+
+        {/* ===================================================
+    PEMBAYARAN PENUH TANPA DP
+
+    Contoh:
+    /tenant/pembayaran-full?roomId=17
+    =================================================== */}
+
+        <Route
+          path="/tenant/pembayaran-full"
+          element={
+            <RoleProtectedRoute
+              allowedRole="penghuni"
+            >
+              <TenantFullPayment />
+            </RoleProtectedRoute>
           }
         />
 

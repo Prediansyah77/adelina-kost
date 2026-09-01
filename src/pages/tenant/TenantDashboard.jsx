@@ -13,6 +13,7 @@ import {
     X,
     CheckCircle2,
     WalletCards,
+    Wallet,
     Send,
     AlertCircle,
 } from "lucide-react";
@@ -2467,41 +2468,62 @@ function TenantDashboard() {
 
                         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 
-                            <p className="text-sm text-slate-500">
+                            <div className="flex items-start justify-between gap-3">
 
-                                Booking
+                                <div>
 
-                            </p>
+                                    <p className="text-sm text-slate-500">
+                                        Booking
+                                    </p>
+
+                                    {bookingLoading ? (
+
+                                        <p className="mt-2 text-2xl font-bold text-slate-800">
+                                            ...
+                                        </p>
+
+                                    ) : booking ? (
+
+                                        <p className="mt-2 text-2xl font-bold text-slate-800">
+                                            Kamar {booking.room?.room_number || "-"}
+                                        </p>
+
+                                    ) : (
+
+                                        <p className="mt-2 text-2xl font-bold text-slate-800">
+                                            Belum ada
+                                        </p>
+
+                                    )}
+
+                                </div>
+
+
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50">
+
+                                    <Home
+                                        size={20}
+                                        className="text-blue-600"
+                                    />
+
+                                </div>
+
+                            </div>
 
 
                             {bookingLoading ? (
 
-                                <>
-                                    <p className="mt-2 text-2xl font-bold text-slate-800">
-
-                                        ...
-
-                                    </p>
-
-                                    <p className="mt-3 text-xs text-slate-400">
-
-                                        Memuat status booking...
-
-                                    </p>
-                                </>
+                                <p className="mt-3 text-xs text-slate-400">
+                                    Memuat detail booking...
+                                </p>
 
                             ) : booking ? (
 
-                                <>
-                                    <p className="mt-2 text-2xl font-bold text-slate-800">
+                                <div className="mt-4">
 
-                                        Kamar{" "}
-                                        {booking.room?.room_number || "-"}
+                                    {/* STATUS */}
 
-                                    </p>
-
-
-                                    <p className="mt-3">
+                                    <div className="mb-4">
 
                                         <span
                                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${booking.booking?.status === "pending"
@@ -2525,10 +2547,170 @@ function TenantDashboard() {
 
                                         </span>
 
-                                    </p>
+                                    </div>
 
 
-                                    <p className="mt-3 text-xs text-slate-400">
+                                    {/* DETAIL BOOKING */}
+
+                                    <div className="space-y-2 border-t border-slate-100 pt-3">
+
+                                        {/* BANGUNAN */}
+
+                                        <div className="flex items-center justify-between gap-3">
+
+                                            <span className="text-xs text-slate-400">
+                                                Bangunan
+                                            </span>
+
+                                            <span className="text-xs font-semibold text-slate-700">
+                                                {booking.room?.building_name || "-"}
+                                            </span>
+
+                                        </div>
+
+
+                                        {/* LANTAI */}
+
+                                        <div className="flex items-center justify-between gap-3">
+
+                                            <span className="text-xs text-slate-400">
+                                                Lantai
+                                            </span>
+
+                                            <span className="text-xs font-semibold text-slate-700">
+                                                {booking.room?.floor_name || "-"}
+                                            </span>
+
+                                        </div>
+
+
+                                        {/* HARGA SEWA */}
+
+                                        <div className="flex items-center justify-between gap-3">
+
+                                            <span className="text-xs text-slate-400">
+                                                Harga Sewa
+                                            </span>
+
+                                            <span className="text-xs font-semibold text-slate-700">
+
+                                                {formatRupiah(
+                                                    booking.room?.price
+                                                )}
+
+                                                <span className="font-normal text-slate-400">
+                                                    {" "} / bulan
+                                                </span>
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {/* BOOKING DIBAYAR */}
+
+                                        <div className="flex items-center justify-between gap-3">
+
+                                            <span className="text-xs text-slate-400">
+                                                Booking Dibayar
+                                            </span>
+
+                                            <span className="text-xs font-semibold text-emerald-600">
+
+                                                {formatRupiah(
+                                                    booking.booking?.total_paid
+                                                )}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {/* SISA SEWA BULANAN */}
+
+                                        <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
+
+                                            <span className="text-xs font-semibold text-slate-500">
+                                                Sisa Sewa Bulanan
+                                            </span>
+
+                                            <span className="text-sm font-bold text-blue-600">
+
+                                                {formatRupiah(
+                                                    Math.max(
+                                                        Number(
+                                                            booking.room?.price || 0
+                                                        ) -
+                                                        Number(
+                                                            booking.booking?.total_paid || 0
+                                                        ),
+                                                        0
+                                                    )
+                                                )}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {/* LAMA BOOKING */}
+
+                                        <div className="flex items-center justify-between gap-3">
+
+                                            <span className="text-xs text-slate-400">
+                                                Lama Booking
+                                            </span>
+
+                                            <span className="text-xs font-semibold text-slate-700">
+
+                                                {booking.booking?.days || 1} hari
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {/* =================================================
+            BAYAR SISA
+        ================================================= */}
+                                        {Math.max(
+                                            Number(booking.room?.price || 0) -
+                                            Number(booking.booking?.total_paid || 0),
+                                            0
+                                        ) > 0 && (
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/tenant/pembayaran-booking/${booking.booking?.id}?type=remaining`
+                                                        )
+                                                    }
+                                                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
+                                                >
+
+                                                    <Wallet size={17} />
+
+                                                    Bayar Sisa{" "}
+
+                                                    {formatRupiah(
+                                                        Math.max(
+                                                            Number(booking.room?.price || 0) -
+                                                            Number(booking.booking?.total_paid || 0),
+                                                            0
+                                                        )
+                                                    )}
+
+                                                </button>
+
+                                            )}
+
+                                    </div>
+
+
+                                    {/* KETERANGAN */}
+
+                                    <p className="mt-4 text-xs leading-5 text-slate-400">
 
                                         {booking.booking?.status === "pending"
                                             ? "Pengajuan sedang menunggu verifikasi admin"
@@ -2540,23 +2722,14 @@ function TenantDashboard() {
                                         }
 
                                     </p>
-                                </>
+
+                                </div>
 
                             ) : (
 
-                                <>
-                                    <p className="mt-2 text-2xl font-bold text-slate-800">
-
-                                        Belum ada
-
-                                    </p>
-
-                                    <p className="mt-3 text-xs text-slate-400">
-
-                                        Belum mengajukan booking
-
-                                    </p>
-                                </>
+                                <p className="mt-3 text-xs text-slate-400">
+                                    Belum mengajukan booking
+                                </p>
 
                             )}
 

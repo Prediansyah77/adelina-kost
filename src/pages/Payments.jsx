@@ -1262,7 +1262,20 @@ const Payments = () => {
         const isBookingPayment =
             payment.booking_id !== null &&
             payment.booking_id !== undefined &&
-            payment.booking_id !== "";
+            payment.booking_id !== "" &&
+            (
+                payment.bill_id === null ||
+                payment.bill_id === undefined ||
+                payment.bill_id === ""
+            );
+
+        console.log("PAYMENT CHECK:", {
+            id: payment.id,
+            amount: payment.amount,
+            booking_id: payment.booking_id,
+            bill_id: payment.bill_id,
+            isBookingPayment
+        });
 
 
         const confirmed =

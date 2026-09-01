@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from "react-router-dom";
+
 import {
     Menu,
     X,
@@ -13,14 +14,181 @@ import {
     Bath,
     Wifi,
     Car,
-    Sun
-} from 'lucide-react'
-import { useState } from 'react'
+    Sun,
+    LayoutDashboard
+} from "lucide-react";
+
+import { useEffect, useState } from "react";
 
 
 function PublicLayout({ children }) {
 
-    const [menuOpen, setMenuOpen] = useState(false)
+    const navigate = useNavigate();
+
+    const [menuOpen, setMenuOpen] =
+        useState(false);
+
+    const [isLoggedIn, setIsLoggedIn] =
+        useState(false);
+
+    const [userRole, setUserRole] =
+        useState(null);
+
+
+    // =====================================================
+    // CEK STATUS LOGIN
+    // =====================================================
+
+    useEffect(() => {
+
+        const checkAuthentication = () => {
+
+            const token =
+                localStorage.getItem("token");
+
+            const userStorage =
+                localStorage.getItem("user");
+
+
+            // =============================================
+            // BELUM LOGIN
+            // =============================================
+
+            if (
+                !token ||
+                !userStorage
+            ) {
+
+                setIsLoggedIn(false);
+
+                setUserRole(null);
+
+                return;
+
+            }
+
+
+            // =============================================
+            // AMBIL DATA USER
+            // =============================================
+
+            try {
+
+                const user =
+                    JSON.parse(userStorage);
+
+
+                setIsLoggedIn(true);
+
+                setUserRole(
+                    user?.role || null
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "PublicLayout User Storage Error:",
+                    error
+                );
+
+
+                setIsLoggedIn(false);
+
+                setUserRole(null);
+
+            }
+
+        };
+
+
+        checkAuthentication();
+
+
+        // =============================================
+        // CEK JIKA LOCAL STORAGE BERUBAH
+        // =============================================
+
+        window.addEventListener(
+            "storage",
+            checkAuthentication
+        );
+
+
+        return () => {
+
+            window.removeEventListener(
+                "storage",
+                checkAuthentication
+            );
+
+        };
+
+    }, []);
+
+
+    // =====================================================
+    // DASHBOARD
+    // =====================================================
+
+    const handleDashboard = () => {
+
+        setMenuOpen(false);
+
+
+        // =============================================
+        // PENGHUNI
+        // =============================================
+
+        if (
+            userRole === "penghuni"
+        ) {
+
+            navigate(
+                "/tenant/dashboard"
+            );
+
+            return;
+
+        }
+
+
+        // =============================================
+        // ADMIN
+        // =============================================
+
+        if (
+            userRole === "admin"
+        ) {
+
+            navigate(
+                "/admin/dashboard"
+            );
+
+            return;
+
+        }
+
+
+        // =============================================
+        // ROLE TIDAK DIKENAL
+        // =============================================
+
+        navigate("/login");
+
+    };
+
+
+    // =====================================================
+    // LOGIN
+    // =====================================================
+
+    const handleLogin = () => {
+
+        setMenuOpen(false);
+
+        navigate("/login");
+
+    };
 
 
     return (
@@ -65,8 +233,14 @@ function PublicLayout({ children }) {
 
                     <Link
                         to="/"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3"
+                        onClick={() =>
+                            setMenuOpen(false)
+                        }
+                        className="
+                            flex
+                            items-center
+                            gap-3
+                        "
                     >
 
                         <div
@@ -119,7 +293,6 @@ function PublicLayout({ children }) {
                     </Link>
 
 
-
                     {/* =================================================
                         DESKTOP NAVIGATION
                     ================================================= */}
@@ -133,9 +306,7 @@ function PublicLayout({ children }) {
                         "
                     >
 
-                        {/* =================================================
-                            BERANDA
-                        ================================================= */}
+                        {/* BERANDA */}
 
                         <Link
                             to="/"
@@ -151,10 +322,7 @@ function PublicLayout({ children }) {
                         </Link>
 
 
-
-                        {/* =================================================
-                            KAMAR
-                        ================================================= */}
+                        {/* KAMAR */}
 
                         <Link
                             to="/kamar"
@@ -170,63 +338,58 @@ function PublicLayout({ children }) {
                         </Link>
 
 
-
-                        {/* =================================================
-                            FASILITAS
-                        ================================================= */}
+                        {/* FASILITAS */}
 
                         <Link
                             to="/fasilitas"
-                            onClick={() => setMenuOpen(false)}
+                            onClick={() =>
+                                setMenuOpen(false)
+                            }
                             className="
-        rounded-lg
-        px-3
-        py-3
-        text-sm
-        font-medium
-        text-slate-700
-        hover:bg-slate-50
-    "
+                                text-sm
+                                font-medium
+                                text-slate-600
+                                transition
+                                hover:text-blue-600
+                            "
                         >
                             Fasilitas
                         </Link>
 
 
-
-                        {/* =================================================
-                            LOKASI
-                        ================================================= */}
+                        {/* LOKASI */}
 
                         <Link
                             to="/lokasi"
-                            onClick={() => setMenuOpen(false)}
+                            onClick={() =>
+                                setMenuOpen(false)
+                            }
                             className="
-        text-sm
-        font-medium
-        text-slate-600
-        transition
-        hover:text-blue-600
-    "
+                                text-sm
+                                font-medium
+                                text-slate-600
+                                transition
+                                hover:text-blue-600
+                            "
                         >
                             Lokasi
                         </Link>
 
 
-
-                        {/* =================================================
-                            TENTANG
-                        ================================================= */}
+                        {/* TENTANG */}
 
                         <Link
                             to="/tentang"
-                            onClick={() => setMenuOpen(false)}
+                            onClick={() =>
+                                setMenuOpen(false)
+                            }
                             className="
-        text-sm
-        font-medium
-        text-slate-600
-        transition
-        hover:text-blue-600
-    "
+                                text-sm
+                                font-medium
+                                text-slate-600
+                                transition
+                                hover:text-blue-600
+                            "
                         >
                             Tentang
                         </Link>
@@ -234,40 +397,79 @@ function PublicLayout({ children }) {
                     </nav>
 
 
-
                     {/* =================================================
-                        DESKTOP LOGIN
+                        DESKTOP AUTH
                     ================================================= */}
 
                     <div className="hidden md:block">
 
-                        <Link
-                            to="/login"
-                            className="
-                                inline-flex
-                                items-center
-                                gap-2
-                                rounded-xl
-                                bg-blue-600
-                                px-4
-                                py-2.5
-                                text-sm
-                                font-semibold
-                                text-white
-                                shadow-sm
-                                transition
-                                hover:bg-blue-700
-                            "
-                        >
+                        {isLoggedIn ? (
 
-                            <LogIn size={16} />
+                            <button
+                                type="button"
+                                onClick={
+                                    handleDashboard
+                                }
+                                className="
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    rounded-xl
+                                    bg-blue-600
+                                    px-4
+                                    py-2.5
+                                    text-sm
+                                    font-semibold
+                                    text-white
+                                    shadow-sm
+                                    transition
+                                    hover:bg-blue-700
+                                    hover:shadow-md
+                                "
+                            >
 
-                            Login
+                                <LayoutDashboard
+                                    size={17}
+                                />
 
-                        </Link>
+                                Dashboard
+
+                            </button>
+
+                        ) : (
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleLogin
+                                }
+                                className="
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    rounded-xl
+                                    bg-blue-600
+                                    px-4
+                                    py-2.5
+                                    text-sm
+                                    font-semibold
+                                    text-white
+                                    shadow-sm
+                                    transition
+                                    hover:bg-blue-700
+                                    hover:shadow-md
+                                "
+                            >
+
+                                <LogIn size={16} />
+
+                                Login
+
+                            </button>
+
+                        )}
 
                     </div>
-
 
 
                     {/* =================================================
@@ -295,15 +497,19 @@ function PublicLayout({ children }) {
                         "
                     >
 
-                        {menuOpen
-                            ? <X size={21} />
-                            : <Menu size={21} />
-                        }
+                        {menuOpen ? (
+
+                            <X size={21} />
+
+                        ) : (
+
+                            <Menu size={21} />
+
+                        )}
 
                     </button>
 
                 </div>
-
 
 
                 {/* =================================================
@@ -323,12 +529,16 @@ function PublicLayout({ children }) {
                         "
                     >
 
-                        <nav className="flex flex-col gap-1">
+                        <nav
+                            className="
+                                flex
+                                flex-col
+                                gap-1
+                            "
+                        >
 
 
-                            {/* =================================================
-                                BERANDA
-                            ================================================= */}
+                            {/* BERANDA */}
 
                             <Link
                                 to="/"
@@ -349,10 +559,7 @@ function PublicLayout({ children }) {
                             </Link>
 
 
-
-                            {/* =================================================
-                                KAMAR
-                            ================================================= */}
+                            {/* KAMAR */}
 
                             <Link
                                 to="/kamar"
@@ -373,13 +580,10 @@ function PublicLayout({ children }) {
                             </Link>
 
 
-
-                            {/* =================================================
-                                FASILITAS
-                            ================================================= */}
+                            {/* FASILITAS */}
 
                             <Link
-                                to="/#fasilitas"
+                                to="/fasilitas"
                                 onClick={() =>
                                     setMenuOpen(false)
                                 }
@@ -397,13 +601,10 @@ function PublicLayout({ children }) {
                             </Link>
 
 
-
-                            {/* =================================================
-                                LOKASI
-                            ================================================= */}
+                            {/* LOKASI */}
 
                             <Link
-                                to="/#lokasi"
+                                to="/lokasi"
                                 onClick={() =>
                                     setMenuOpen(false)
                                 }
@@ -421,13 +622,10 @@ function PublicLayout({ children }) {
                             </Link>
 
 
-
-                            {/* =================================================
-                                TENTANG
-                            ================================================= */}
+                            {/* TENTANG */}
 
                             <Link
-                                to="/#tentang"
+                                to="/tentang"
                                 onClick={() =>
                                     setMenuOpen(false)
                                 }
@@ -445,37 +643,75 @@ function PublicLayout({ children }) {
                             </Link>
 
 
-
                             {/* =================================================
-                                LOGIN
+                                MOBILE AUTH
                             ================================================= */}
 
-                            <Link
-                                to="/login"
-                                onClick={() =>
-                                    setMenuOpen(false)
-                                }
-                                className="
-                                    mt-2
-                                    inline-flex
-                                    items-center
-                                    justify-center
-                                    gap-2
-                                    rounded-xl
-                                    bg-blue-600
-                                    px-4
-                                    py-3
-                                    text-sm
-                                    font-semibold
-                                    text-white
-                                "
-                            >
+                            {isLoggedIn ? (
 
-                                <LogIn size={16} />
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleDashboard
+                                    }
+                                    className="
+                                        mt-2
+                                        inline-flex
+                                        items-center
+                                        justify-center
+                                        gap-2
+                                        rounded-xl
+                                        bg-blue-600
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        font-semibold
+                                        text-white
+                                        transition
+                                        hover:bg-blue-700
+                                    "
+                                >
 
-                                Login
+                                    <LayoutDashboard
+                                        size={17}
+                                    />
 
-                            </Link>
+                                    Dashboard
+
+                                </button>
+
+                            ) : (
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleLogin
+                                    }
+                                    className="
+                                        mt-2
+                                        inline-flex
+                                        items-center
+                                        justify-center
+                                        gap-2
+                                        rounded-xl
+                                        bg-blue-600
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        font-semibold
+                                        text-white
+                                        transition
+                                        hover:bg-blue-700
+                                    "
+                                >
+
+                                    <LogIn size={16} />
+
+                                    Login
+
+                                </button>
+
+                            )}
 
                         </nav>
 
@@ -484,7 +720,6 @@ function PublicLayout({ children }) {
                 )}
 
             </header>
-
 
 
             {/* =====================================================
@@ -496,7 +731,6 @@ function PublicLayout({ children }) {
                 {children}
 
             </main>
-
 
 
             {/* =====================================================
@@ -579,7 +813,6 @@ function PublicLayout({ children }) {
                         </div>
 
 
-
                         <p
                             className="
                                 mt-4
@@ -595,7 +828,6 @@ function PublicLayout({ children }) {
                         </p>
 
                     </div>
-
 
 
                     {/* =================================================
@@ -620,9 +852,6 @@ function PublicLayout({ children }) {
                             "
                         >
 
-
-                            {/* BERANDA */}
-
                             <Link
                                 to="/"
                                 className="hover:text-white"
@@ -630,9 +859,6 @@ function PublicLayout({ children }) {
                                 Beranda
                             </Link>
 
-
-
-                            {/* KAMAR */}
 
                             <Link
                                 to="/kamar"
@@ -642,33 +868,24 @@ function PublicLayout({ children }) {
                             </Link>
 
 
-
-                            {/* FASILITAS */}
-
                             <Link
-                                to="/#fasilitas"
+                                to="/fasilitas"
                                 className="hover:text-white"
                             >
                                 Fasilitas
                             </Link>
 
 
-
-                            {/* LOKASI */}
-
                             <Link
-                                to="/#lokasi"
+                                to="/lokasi"
                                 className="hover:text-white"
                             >
                                 Lokasi
                             </Link>
 
 
-
-                            {/* TENTANG */}
-
                             <Link
-                                to="/#tentang"
+                                to="/tentang"
                                 className="hover:text-white"
                             >
                                 Tentang
@@ -677,7 +894,6 @@ function PublicLayout({ children }) {
                         </div>
 
                     </div>
-
 
 
                     {/* =================================================
@@ -700,9 +916,6 @@ function PublicLayout({ children }) {
                             "
                         >
 
-
-                            {/* SPRING BED */}
-
                             <p
                                 className="
                                     flex
@@ -710,16 +923,10 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <BedDouble size={17} />
-
                                 Spring Bed
-
                             </p>
 
-
-
-                            {/* LEMARI */}
 
                             <p
                                 className="
@@ -728,16 +935,10 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <Armchair size={17} />
-
                                 Lemari
-
                             </p>
 
-
-
-                            {/* KIPAS ANGIN */}
 
                             <p
                                 className="
@@ -746,16 +947,10 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <Wind size={17} />
-
                                 Kipas Angin
-
                             </p>
 
-
-
-                            {/* KAMAR MANDI */}
 
                             <p
                                 className="
@@ -764,16 +959,10 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <Bath size={17} />
-
                                 Kamar Mandi
-
                             </p>
 
-
-
-                            {/* WIFI */}
 
                             <p
                                 className="
@@ -782,16 +971,10 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <Wifi size={17} />
-
                                 WiFi
-
                             </p>
 
-
-
-                            {/* DAPUR UMUM */}
 
                             <p
                                 className="
@@ -800,16 +983,10 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <CookingPot size={17} />
-
                                 Dapur Umum
-
                             </p>
 
-
-
-                            {/* AREA PARKIR */}
 
                             <p
                                 className="
@@ -818,16 +995,10 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <Car size={17} />
-
                                 Area Parkir
-
                             </p>
 
-
-
-                            {/* AREA JEMURAN */}
 
                             <p
                                 className="
@@ -836,17 +1007,13 @@ function PublicLayout({ children }) {
                                     gap-2
                                 "
                             >
-
                                 <Sun size={17} />
-
                                 Area Jemuran
-
                             </p>
 
                         </div>
 
                     </div>
-
 
 
                     {/* =================================================
@@ -868,9 +1035,6 @@ function PublicLayout({ children }) {
                                 text-slate-400
                             "
                         >
-
-
-                            {/* LOKASI */}
 
                             <p
                                 className="
@@ -896,9 +1060,6 @@ function PublicLayout({ children }) {
                             </p>
 
 
-
-                            {/* JENIS KOS */}
-
                             <p
                                 className="
                                     flex
@@ -913,9 +1074,6 @@ function PublicLayout({ children }) {
 
                             </p>
 
-
-
-                            {/* INFO TAMBAHAN */}
 
                             <p
                                 className="
@@ -945,7 +1103,6 @@ function PublicLayout({ children }) {
                     </div>
 
                 </div>
-
 
 
                 {/* =================================================
@@ -986,9 +1143,9 @@ function PublicLayout({ children }) {
 
         </div>
 
-    )
+    );
 
 }
 
 
-export default PublicLayout
+export default PublicLayout;

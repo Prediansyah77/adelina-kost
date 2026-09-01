@@ -10,7 +10,7 @@ import {
     Layers3,
     CheckCircle2,
     ArrowLeft,
-    Send,
+    CreditCard,
     Loader2,
 } from "lucide-react";
 
@@ -23,25 +23,37 @@ import { getRoomById } from "../../services/roomService";
 //
 // URL:
 //
-// /tenant/pengajuan-kamar?roomId=16
+// DP:
+// /tenant/pengajuan-kamar?roomId=16&paymentType=dp
 //
-// Alur:
+// FULL:
+// /tenant/pengajuan-kamar?roomId=16&paymentType=full
+//
+// ALUR:
 //
 // Pilih kamar
 //      ↓
 // Halaman pengajuan kamar
 //      ↓
-// Klik Kirim Pengajuan
+// Pilih metode pembayaran
 //      ↓
-// POST /api/bookings
+// Halaman pembayaran
 //      ↓
-// Booking dibuat di database
+// User upload bukti pembayaran
 //      ↓
-// Dapat booking_id
+// Submit pembayaran
 //      ↓
-// Pindah otomatis ke:
+// BARU backend membuat booking
 //
-// /tenant/pembayaran-booking/:bookingId
+// PENTING:
+//
+// File ini TIDAK membuat booking.
+//
+// Tidak ada:
+//      POST /api/bookings
+//
+// Booking baru dibuat oleh backend ketika
+// pembayaran benar-benar disubmit.
 //
 // =====================================================
 
@@ -60,6 +72,32 @@ function TenantRoomApplication() {
 
     const roomId =
         searchParams.get("roomId");
+
+
+    // =====================================================
+    // PAYMENT TYPE
+    // =====================================================
+    //
+    // dp   = pembayaran DP
+    // full = pembayaran penuh tanpa DP
+    //
+    // Default kita gunakan "dp" agar URL lama
+    // tetap bisa berjalan.
+    //
+    // =====================================================
+
+    const paymentType =
+        String(
+            searchParams.get("paymentType") || "dp"
+        ).toLowerCase();
+
+
+    const isFullPayment =
+        paymentType === "full";
+
+
+    const isDpPayment =
+        paymentType === "dp";
 
 
     // =====================================================
@@ -90,13 +128,12 @@ function TenantRoomApplication() {
             try {
 
                 setLoading(true);
-
                 setError("");
 
 
-                // =================================================
+                // =============================================
                 // CEK ROOM ID
-                // =================================================
+                // =============================================
 
                 if (!roomId) {
 
@@ -107,29 +144,51 @@ function TenantRoomApplication() {
                 }
 
 
-                // =================================================
+                // =============================================
+                // CEK PAYMENT TYPE
+                // =============================================
+
+                if (
+                    !isDpPayment &&
+                    !isFullPayment
+                ) {
+
+                    throw new Error(
+                        "Metode pembayaran tidak valid."
+                    );
+
+                }
+
+
+                // =============================================
                 // CEK TOKEN
-                // =================================================
+                // =============================================
 
                 const token =
-                    localStorage.getItem("token");
+                    localStorage.getItem(
+                        "token"
+                    );
 
 
                 if (!token) {
 
-                    navigate("/login");
+                    navigate(
+                        "/login"
+                    );
 
                     return;
 
                 }
 
 
-                // =================================================
+                // =============================================
                 // AMBIL DATA KAMAR
-                // =================================================
+                // =============================================
 
                 const response =
-                    await getRoomById(roomId);
+                    await getRoomById(
+                        roomId
+                    );
 
 
                 console.log(
@@ -152,9 +211,9 @@ function TenantRoomApplication() {
                 }
 
 
-                // =================================================
+                // =============================================
                 // CEK STATUS KAMAR
-                // =================================================
+                // =============================================
 
                 const roomStatus =
                     String(
@@ -174,14 +233,13 @@ function TenantRoomApplication() {
                 }
 
 
-                // =================================================
+                // =============================================
                 // SIMPAN ROOM
-                // =================================================
+                // =============================================
 
                 setRoom(
                     roomData
                 );
-
 
             } catch (error) {
 
@@ -195,7 +253,6 @@ function TenantRoomApplication() {
                     error.message ||
                     "Gagal mengambil data kamar."
                 );
-
 
             } finally {
 
@@ -211,6 +268,8 @@ function TenantRoomApplication() {
     }, [
         roomId,
         navigate,
+        isDpPayment,
+        isFullPayment,
     ]);
 
 
@@ -237,222 +296,159 @@ function TenantRoomApplication() {
 
 
     // =====================================================
-    // SUBMIT BOOKING
+    // PAYMENT INFORMATION
     // =====================================================
 
-    const handleSubmit =
-        async () => {
-
-            try {
-
-                setSubmitting(true);
-
-                setError("");
-
-
-                // =================================================
-                // CEK TOKEN
-                // =================================================
-
-                const token =
-                    localStorage.getItem(
-                        "token"
-                    );
-
-
-                if (!token) {
-
-                    navigate(
-                        "/login"
-                    );
-
-                    return;
-
-                }
-
-
-                // =================================================
-                // CEK ROOM
-                // =================================================
-
-                if (!roomId) {
-
-                    throw new Error(
-                        "Kamar belum dipilih."
-                    );
-
-                }
-
-
-                // =================================================
-                // CEK DATA ROOM
-                // =================================================
-
-                if (!room) {
-
-                    throw new Error(
-                        "Data kamar belum tersedia."
-                    );
-
-                }
-
-
-                // =================================================
-                // REQUEST CREATE BOOKING
-                // =================================================
-
-                console.log(
-                    "CREATE BOOKING ROOM ID:",
-                    roomId
-                );
-
-
-                const response =
-                    await fetch(
-                        "http://localhost:5000/api/bookings",
-                        {
-                            method: "POST",
-
-                            headers: {
-
-                                "Content-Type":
-                                    "application/json",
-
-                                Authorization:
-                                    `Bearer ${token}`,
-
-                            },
-
-                            body:
-                                JSON.stringify({
-
-                                    room_id:
-                                        Number(roomId),
-
-                                }),
-
-                        }
-                    );
-
-
-                // =================================================
-                // AMBIL RESPONSE
-                // =================================================
-
-                const data =
-                    await response.json();
-
-
-                console.log(
-                    "CREATE BOOKING RESPONSE:",
-                    data
-                );
-
-
-                // =================================================
-                // CEK ERROR BACKEND
-                // =================================================
-
-                if (
-                    !response.ok ||
-                    !data?.success
-                ) {
-
-                    throw new Error(
-                        data?.message ||
-                        "Gagal mengirim pengajuan kamar."
-                    );
-
-                }
-
-
-                // =================================================
-                // AMBIL DATA BOOKING
-                // =================================================
-
-                const bookingData =
-                    data?.data;
-
-
-                console.log(
-                    "BOOKING DATA:",
-                    bookingData
-                );
-
-
-                // =================================================
-                // AMBIL BOOKING ID
-                // =================================================
-                //
-                // Kita dukung beberapa kemungkinan response:
-                //
-                // data.data.id
-                // data.data.booking_id
-                // data.booking_id
-                //
-                // =================================================
-
-                const newBookingId =
-                    bookingData?.id ??
-                    bookingData?.booking_id ??
-                    data?.booking_id;
-
-
-                console.log(
-                    "NEW BOOKING ID:",
-                    newBookingId
-                );
-
-
-                // =================================================
-                // CEK BOOKING ID
-                // =================================================
-
-                if (!newBookingId) {
-
-                    throw new Error(
-                        "Pengajuan berhasil dibuat, tetapi Booking ID tidak diterima dari server."
-                    );
-
-                }
-
-
-                // =================================================
-                // PINDAH KE PEMBAYARAN
-                // =================================================
-                //
-                // CONTOH:
-                //
-                // /tenant/pembayaran-booking/15
-                //
-                // =================================================
-
-                navigate(
-                    `/tenant/pembayaran-booking/${newBookingId}`
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Submit Booking Error:",
-                    error
-                );
-
-
-                setError(
-                    error.message ||
-                    "Gagal mengirim pengajuan kamar."
-                );
-
-
-            } finally {
-
-                setSubmitting(false);
+    const paymentTitle =
+        isFullPayment
+            ? "Pembayaran Penuh"
+            : "Pembayaran DP";
+
+
+    const paymentSubtitle =
+        isFullPayment
+            ? "Lanjutkan ke pembayaran penuh"
+            : "Lanjutkan ke pembayaran DP";
+
+
+    const paymentButtonText =
+        isFullPayment
+            ? "Lanjut ke Pembayaran Penuh"
+            : "Lanjut ke Pembayaran DP";
+
+
+    // =====================================================
+    // LANJUT KE PEMBAYARAN
+    // =====================================================
+    //
+    // PENTING:
+    //
+    // TIDAK ADA POST /api/bookings DI SINI.
+    //
+    // Kita hanya membawa:
+    //
+    // - roomId
+    // - paymentType
+    //
+    // ke halaman pembayaran.
+    //
+    // Booking baru dibuat ketika user benar-benar
+    // mengirim pembayaran.
+    //
+    // =====================================================
+
+    const handleContinueToPayment = () => {
+
+        try {
+
+            setSubmitting(true);
+            setError("");
+
+            // =============================================
+            // CEK TOKEN
+            // =============================================
+
+            const token =
+                localStorage.getItem("token");
+
+            if (!token) {
+
+                navigate("/login");
+
+                return;
 
             }
 
-        };
+
+            // =============================================
+            // CEK ROOM ID
+            // =============================================
+
+            if (!roomId) {
+
+                throw new Error(
+                    "Kamar belum dipilih."
+                );
+
+            }
+
+
+            // =============================================
+            // CEK DATA ROOM
+            // =============================================
+
+            if (!room) {
+
+                throw new Error(
+                    "Data kamar belum tersedia."
+                );
+
+            }
+
+
+            // =============================================
+            // CEK STATUS ROOM
+            // =============================================
+
+            const roomStatus =
+                String(
+                    room.status || ""
+                ).toLowerCase();
+
+            if (
+                roomStatus !== "available" &&
+                roomStatus !== "tersedia"
+            ) {
+
+                throw new Error(
+                    "Kamar sudah tidak tersedia."
+                );
+
+            }
+
+
+            // =============================================
+            // PEMBAYARAN FULL / TANPA DP
+            // =============================================
+
+            if (isFullPayment) {
+
+                navigate(
+                    `/tenant/pembayaran-full?roomId=${roomId}`
+                );
+
+                return;
+
+            }
+
+
+            // =============================================
+            // PEMBAYARAN DP
+            // =============================================
+
+            navigate(
+                `/tenant/pembayaran-booking?roomId=${roomId}&paymentType=dp`
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Continue Payment Error:",
+                error
+            );
+
+            setError(
+                error.message ||
+                "Gagal melanjutkan ke pembayaran."
+            );
+
+        } finally {
+
+            setSubmitting(false);
+
+        }
+
+    };
 
 
     // =====================================================
@@ -495,7 +491,10 @@ function TenantRoomApplication() {
     // ERROR
     // =====================================================
 
-    if (error && !room) {
+    if (
+        error &&
+        !room
+    ) {
 
         return (
 
@@ -608,8 +607,7 @@ function TenantRoomApplication() {
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
 
                         Periksa kembali informasi kamar
-                        sebelum mengirim pengajuan kepada
-                        pengelola.
+                        sebelum melanjutkan ke pembayaran.
 
                     </p>
 
@@ -636,7 +634,10 @@ function TenantRoomApplication() {
 
                             <div className="flex h-32 w-32 items-center justify-center rounded-3xl bg-white text-7xl shadow-sm">
 
-                                🛏️
+                                <BedDouble
+                                    size={76}
+                                    className="text-blue-500"
+                                />
 
                             </div>
 
@@ -661,6 +662,7 @@ function TenantRoomApplication() {
                                 <h2 className="mt-1 text-3xl font-bold text-slate-900">
 
                                     Kamar{" "}
+
                                     {room.room_number}
 
                                 </h2>
@@ -689,11 +691,8 @@ function TenantRoomApplication() {
                                     <div>
 
                                         <p className="text-xs text-slate-400">
-
                                             Bangunan
-
                                         </p>
-
 
                                         <p className="text-sm font-semibold text-slate-700">
 
@@ -723,11 +722,8 @@ function TenantRoomApplication() {
                                     <div>
 
                                         <p className="text-xs text-slate-400">
-
                                             Lantai
-
                                         </p>
-
 
                                         <p className="text-sm font-semibold text-slate-700">
 
@@ -793,7 +789,7 @@ function TenantRoomApplication() {
 
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
 
-                                <Send
+                                <CreditCard
                                     size={20}
                                 />
 
@@ -804,14 +800,14 @@ function TenantRoomApplication() {
 
                                 <h2 className="font-bold text-slate-900">
 
-                                    Konfirmasi Pengajuan
+                                    {paymentTitle}
 
                                 </h2>
 
 
                                 <p className="text-xs text-slate-500">
 
-                                    Pastikan kamar sudah sesuai
+                                    {paymentSubtitle}
 
                                 </p>
 
@@ -830,9 +826,7 @@ function TenantRoomApplication() {
                             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
 
                                 <span className="text-sm text-slate-500">
-
                                     Kamar
-
                                 </span>
 
 
@@ -850,9 +844,7 @@ function TenantRoomApplication() {
                             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
 
                                 <span className="text-sm text-slate-500">
-
-                                    Harga
-
+                                    Harga sewa
                                 </span>
 
 
@@ -867,14 +859,53 @@ function TenantRoomApplication() {
                             </div>
 
 
+                            {/* PAYMENT TYPE */}
+
+                            {isDpPayment ? (
+
+                                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+
+                                    <span className="text-sm text-slate-500">
+                                        DP Booking
+                                    </span>
+
+
+                                    <span className="text-sm font-bold text-blue-600">
+
+                                        Rp25.000
+
+                                    </span>
+
+                                </div>
+
+                            ) : (
+
+                                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+
+                                    <span className="text-sm text-slate-500">
+                                        Pembayaran
+                                    </span>
+
+
+                                    <span className="text-sm font-bold text-blue-600">
+
+                                        {formatPrice(
+                                            room.price
+                                        )}
+
+                                    </span>
+
+                                </div>
+
+                            )}
+
+
                             {/* STATUS */}
 
                             <div className="flex items-center justify-between">
 
                                 <span className="text-sm text-slate-500">
-
-                                    Status
-
+                                    Status kamar
                                 </span>
 
 
@@ -895,17 +926,31 @@ function TenantRoomApplication() {
 
                         {/* INFO */}
 
-                        <div className="mt-6 rounded-2xl border border-amber-100 bg-amber-50 p-4">
+                        <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-4">
 
-                            <p className="text-xs leading-5 text-amber-700">
+                            {isDpPayment ? (
 
-                                Setelah pengajuan dikirim,
-                                Anda akan diarahkan ke halaman
-                                pembayaran booking. Pengelola
-                                akan melakukan verifikasi setelah
-                                pembayaran dikirim.
+                                <p className="text-xs leading-5 text-blue-700">
 
-                            </p>
+                                    Belum ada booking yang dibuat.
+                                    Booking baru akan tercatat setelah
+                                    Anda mengirim pembayaran DP dan
+                                    bukti pembayaran berhasil dikirim.
+
+                                </p>
+
+                            ) : (
+
+                                <p className="text-xs leading-5 text-blue-700">
+
+                                    Belum ada booking yang dibuat.
+                                    Booking baru akan tercatat setelah
+                                    Anda mengirim pembayaran penuh dan
+                                    bukti pembayaran berhasil dikirim.
+
+                                </p>
+
+                            )}
 
                         </div>
 
@@ -927,11 +972,13 @@ function TenantRoomApplication() {
                         )}
 
 
-                        {/* SUBMIT */}
+                        {/* CONTINUE */}
 
                         <button
                             type="button"
-                            onClick={handleSubmit}
+                            onClick={
+                                handleContinueToPayment
+                            }
                             disabled={submitting}
                             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
@@ -945,7 +992,7 @@ function TenantRoomApplication() {
                                         className="animate-spin"
                                     />
 
-                                    Membuat Booking...
+                                    Membuka Pembayaran...
 
                                 </>
 
@@ -953,11 +1000,11 @@ function TenantRoomApplication() {
 
                                 <>
 
-                                    <Send
+                                    <CreditCard
                                         size={17}
                                     />
 
-                                    Kirim Pengajuan
+                                    {paymentButtonText}
 
                                 </>
 
@@ -966,11 +1013,13 @@ function TenantRoomApplication() {
                         </button>
 
 
+                        {/* NOTE */}
+
                         <p className="mt-3 text-center text-xs leading-5 text-slate-400">
 
-                            Dengan mengirim pengajuan,
-                            Anda menyatakan bahwa informasi
-                            yang diberikan benar.
+                            Booking belum dibuat pada tahap ini.
+                            Booking hanya akan dibuat setelah
+                            pembayaran benar-benar dikirim.
 
                         </p>
 
