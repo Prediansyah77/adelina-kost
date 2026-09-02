@@ -19,6 +19,8 @@ import { useEffect, useState } from "react";
 
 import { getPublicRooms } from "../../services/roomService";
 
+import logo from "../../assets/adelina-kost-logo.png";
+
 
 // =====================================================
 // GOOGLE MAPS ADELINA KOST
@@ -96,24 +98,59 @@ function LandingPage() {
 
         <div>
 
-
             {/* =====================================================
                 HERO
             ===================================================== */}
 
             <section
                 id="beranda"
-                className="relative overflow-hidden bg-slate-50"
+                className="
+                    relative
+                    overflow-hidden
+                    bg-slate-50
+                "
             >
+
+                {/* DECORATIVE BACKGROUND */}
 
                 <div
                     className="
+                        pointer-events-none
+                        absolute
+                        -right-40
+                        -top-40
+                        h-96
+                        w-96
+                        rounded-full
+                        bg-blue-100/50
+                        blur-3xl
+                    "
+                />
+
+                <div
+                    className="
+                        pointer-events-none
+                        absolute
+                        -bottom-40
+                        left-1/3
+                        h-80
+                        w-80
+                        rounded-full
+                        bg-indigo-100/40
+                        blur-3xl
+                    "
+                />
+
+
+                <div
+                    className="
+                        relative
                         mx-auto
                         grid
                         min-h-[650px]
                         max-w-7xl
                         items-center
-                        gap-12
+                        gap-14
                         px-4
                         py-16
                         sm:px-6
@@ -133,23 +170,36 @@ function LandingPage() {
 
                         <div
                             className="
-                                mb-5
+                                mb-6
                                 inline-flex
                                 items-center
                                 gap-2
                                 rounded-full
                                 border
                                 border-blue-100
-                                bg-blue-50
-                                px-3
-                                py-1.5
+                                bg-white
+                                px-4
+                                py-2
                                 text-xs
                                 font-semibold
                                 text-blue-700
+                                shadow-sm
                             "
                         >
 
-                            <Sparkles size={14} />
+                            <span
+                                className="
+                                    flex
+                                    h-6
+                                    w-6
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    bg-blue-50
+                                "
+                            >
+                                <Sparkles size={13} />
+                            </span>
 
                             Hunian nyaman di Pekanbaru
 
@@ -163,17 +213,26 @@ function LandingPage() {
                                 max-w-2xl
                                 text-4xl
                                 font-bold
-                                leading-tight
+                                leading-[1.08]
                                 tracking-tight
-                                text-slate-900
+                                text-slate-950
                                 sm:text-5xl
                                 lg:text-6xl
                             "
                         >
 
-                            Tempat Tinggal Nyaman untuk
+                            Tempat Tinggal
 
-                            <span className="block text-blue-600">
+                            <span className="block">
+                                Nyaman untuk
+                            </span>
+
+                            <span
+                                className="
+                                    block
+                                    text-blue-600
+                                "
+                            >
                                 Aktivitas Sehari-hari
                             </span>
 
@@ -204,42 +263,80 @@ function LandingPage() {
                             KAMAR TERSEDIA
                         ================================================= */}
 
-                        <div className="mt-5">
+                        <div
+                            className="
+                                mt-6
+                                inline-flex
+                                items-center
+                                gap-4
+                                rounded-2xl
+                                border
+                                border-slate-200
+                                bg-white
+                                px-5
+                                py-3
+                                shadow-sm
+                            "
+                        >
 
-                            <p
+                            <div
                                 className="
-                                    text-sm
-                                    font-medium
-                                    text-slate-500
+                                    flex
+                                    h-10
+                                    w-10
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-emerald-50
                                 "
                             >
-                                Kamar tersedia
-                            </p>
+
+                                <BedDouble
+                                    size={20}
+                                    className="text-emerald-600"
+                                />
+
+                            </div>
 
 
-                            <p
-                                className="
-                                    mt-1
-                                    text-2xl
-                                    font-bold
-                                    text-emerald-600
-                                "
-                            >
+                            <div>
 
-                                {availableRooms}
-
-                                <span
+                                <p
                                     className="
-                                        ml-1
-                                        text-sm
+                                        text-xs
                                         font-medium
                                         text-slate-500
                                     "
                                 >
-                                    kamar
-                                </span>
+                                    Kamar tersedia
+                                </p>
 
-                            </p>
+
+                                <p
+                                    className="
+                                        mt-0.5
+                                        text-xl
+                                        font-bold
+                                        text-emerald-600
+                                    "
+                                >
+
+                                    {availableRooms}
+
+                                    <span
+                                        className="
+                                            ml-1
+                                            text-sm
+                                            font-medium
+                                            text-slate-500
+                                        "
+                                    >
+                                        kamar
+                                    </span>
+
+                                </p>
+
+                            </div>
 
                         </div>
 
@@ -267,14 +364,18 @@ function LandingPage() {
                                     gap-2
                                     rounded-xl
                                     bg-blue-600
-                                    px-5
+                                    px-6
                                     py-3.5
                                     text-sm
                                     font-semibold
                                     text-white
-                                    shadow-sm
+                                    shadow-lg
+                                    shadow-blue-600/20
                                     transition
+                                    duration-200
+                                    hover:-translate-y-0.5
                                     hover:bg-blue-700
+                                    hover:shadow-xl
                                 "
                             >
 
@@ -298,13 +399,17 @@ function LandingPage() {
                                     border
                                     border-slate-200
                                     bg-white
-                                    px-5
+                                    px-6
                                     py-3.5
                                     text-sm
                                     font-semibold
                                     text-slate-700
+                                    shadow-sm
                                     transition
+                                    duration-200
+                                    hover:-translate-y-0.5
                                     hover:bg-slate-50
+                                    hover:shadow-md
                                 "
                             >
 
@@ -327,7 +432,8 @@ function LandingPage() {
                                 grid
                                 max-w-xl
                                 grid-cols-2
-                                gap-4
+                                gap-x-6
+                                gap-y-4
                                 sm:grid-cols-3
                             "
                         >
@@ -370,46 +476,263 @@ function LandingPage() {
 
 
                     {/* =================================================
-                        HERO IMAGE
+                        HERO LOGO
                     ================================================= */}
 
-                    <div className="relative">
+                    <div
+                        className="
+                            relative
+                            flex
+                            min-h-[400px]
+                            items-center
+                            justify-center
+                            lg:min-h-[520px]
+                        "
+                    >
+
+                        {/* GLOW */}
+
+                        <div
+                            className="
+                                pointer-events-none
+                                absolute
+                                h-72
+                                w-72
+                                rounded-full
+                                bg-blue-200/40
+                                blur-3xl
+                                sm:h-96
+                                sm:w-96
+                            "
+                        />
+
+
+                        {/* DECORATIVE CIRCLE */}
 
                         <div
                             className="
                                 absolute
-                                -inset-4
-                                rounded-[2rem]
-                                bg-blue-100/60
-                                blur-2xl
+                                h-[310px]
+                                w-[310px]
+                                rounded-full
+                                border
+                                border-blue-100
+                                sm:h-[430px]
+                                sm:w-[430px]
                             "
                         />
 
 
                         <div
                             className="
+                                absolute
+                                h-[250px]
+                                w-[250px]
+                                rounded-full
+                                border
+                                border-slate-200
+                                sm:h-[350px]
+                                sm:w-[350px]
+                            "
+                        />
+
+
+                        {/* LOGO CARD */}
+
+                        <div
+                            className="
                                 relative
-                                overflow-hidden
+                                z-10
+                                flex
+                                w-full
+                                max-w-[520px]
+                                items-center
+                                justify-center
                                 rounded-[2rem]
                                 border
                                 border-white
-                                bg-white
-                                p-2
-                                shadow-xl
+                                bg-white/80
+                                px-6
+                                py-10
+                                shadow-2xl
+                                shadow-slate-300/40
+                                backdrop-blur-sm
+                                sm:px-10
+                                sm:py-12
                             "
                         >
 
-                            <img
-                                src="/src/assets/hero.png"
-                                alt="ADELINA KOST"
+                            <div
                                 className="
-                                    h-[360px]
-                                    w-full
-                                    rounded-[1.5rem]
-                                    object-cover
-                                    sm:h-[440px]
+                                    absolute
+                                    left-5
+                                    top-5
+                                    h-3
+                                    w-3
+                                    rounded-full
+                                    bg-blue-600
                                 "
                             />
+
+
+                            <div
+                                className="
+                                    absolute
+                                    bottom-5
+                                    right-5
+                                    h-3
+                                    w-3
+                                    rounded-full
+                                    bg-amber-400
+                                "
+                            />
+
+
+                            <img
+                                src={logo}
+                                alt="ADELINA KOST"
+                                className="
+                                    relative
+                                    z-10
+                                    h-auto
+                                    w-full
+                                    max-w-[440px]
+                                    object-contain
+                                    drop-shadow-xl
+                                "
+                            />
+
+                        </div>
+
+
+                        {/* FLOATING LABEL */}
+
+                        <div
+                            className="
+                                absolute
+                                bottom-4
+                                left-0
+                                z-20
+                                hidden
+                                items-center
+                                gap-3
+                                rounded-2xl
+                                border
+                                border-slate-200
+                                bg-white
+                                px-4
+                                py-3
+                                shadow-lg
+                                sm:flex
+                            "
+                        >
+
+                            <div
+                                className="
+                                    flex
+                                    h-9
+                                    w-9
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-blue-50
+                                    text-blue-600
+                                "
+                            >
+
+                                <ShieldCheck size={18} />
+
+                            </div>
+
+
+                            <div>
+
+                                <p
+                                    className="
+                                        text-xs
+                                        font-bold
+                                        text-slate-800
+                                    "
+                                >
+                                    Nyaman & Aman
+                                </p>
+
+                                <p
+                                    className="
+                                        text-[11px]
+                                        text-slate-500
+                                    "
+                                >
+                                    Hunian untuk kebutuhan sehari-hari
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* FLOATING LOCATION */}
+
+                        <div
+                            className="
+                                absolute
+                                right-0
+                                top-8
+                                z-20
+                                hidden
+                                items-center
+                                gap-3
+                                rounded-2xl
+                                border
+                                border-slate-200
+                                bg-white
+                                px-4
+                                py-3
+                                shadow-lg
+                                sm:flex
+                            "
+                        >
+
+                            <div
+                                className="
+                                    flex
+                                    h-9
+                                    w-9
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-emerald-50
+                                    text-emerald-600
+                                "
+                            >
+
+                                <MapPin size={18} />
+
+                            </div>
+
+
+                            <div>
+
+                                <p
+                                    className="
+                                        text-xs
+                                        font-bold
+                                        text-slate-800
+                                    "
+                                >
+                                    Pekanbaru
+                                </p>
+
+                                <p
+                                    className="
+                                        text-[11px]
+                                        text-slate-500
+                                    "
+                                >
+                                    Lokasi strategis
+                                </p>
+
+                            </div>
 
                         </div>
 
@@ -452,7 +775,13 @@ function LandingPage() {
 
                         <div>
 
-                            <p className="text-sm font-semibold text-blue-600">
+                            <p
+                                className="
+                                    text-sm
+                                    font-semibold
+                                    text-blue-600
+                                "
+                            >
                                 Pilihan kamar
                             </p>
 
@@ -480,10 +809,8 @@ function LandingPage() {
                                     sm:text-base
                                 "
                             >
-
                                 Pilih kamar berdasarkan bangunan,
                                 lantai, harga, dan ketersediaannya.
-
                             </p>
 
                         </div>
@@ -501,11 +828,8 @@ function LandingPage() {
                                 hover:text-blue-700
                             "
                         >
-
                             Lihat semua kamar
-
                             <ArrowRight size={16} />
-
                         </Link>
 
                     </div>
@@ -520,17 +844,22 @@ function LandingPage() {
                         "
                     >
 
-                        {/* =================================================
-                            BANGUNAN 1
-                        ================================================= */}
+                        {/* BANGUNAN 1 */}
 
                         <div
                             className="
+                                group
                                 rounded-2xl
                                 border
                                 border-slate-200
                                 bg-slate-50
                                 p-6
+                                transition
+                                duration-200
+                                hover:-translate-y-1
+                                hover:border-blue-100
+                                hover:bg-white
+                                hover:shadow-lg
                             "
                         >
 
@@ -547,12 +876,10 @@ function LandingPage() {
                                         bg-blue-100
                                     "
                                 >
-
                                     <BedDouble
                                         size={21}
                                         className="text-blue-600"
                                     />
-
                                 </div>
 
 
@@ -588,10 +915,7 @@ function LandingPage() {
                                         text-slate-500
                                     "
                                 >
-
                                     Pilihan kamar dari ADELINA KOST 1
-
-
                                 </p>
 
                             </div>
@@ -618,27 +942,29 @@ function LandingPage() {
                                     hover:bg-slate-50
                                 "
                             >
-
                                 Lihat kamar
-
                                 <ArrowRight size={15} />
-
                             </Link>
 
                         </div>
 
 
-                        {/* =================================================
-                            BANGUNAN 2
-                        ================================================= */}
+                        {/* BANGUNAN 2 */}
 
                         <div
                             className="
+                                group
                                 rounded-2xl
                                 border
                                 border-slate-200
                                 bg-slate-50
                                 p-6
+                                transition
+                                duration-200
+                                hover:-translate-y-1
+                                hover:border-blue-100
+                                hover:bg-white
+                                hover:shadow-lg
                             "
                         >
 
@@ -655,12 +981,10 @@ function LandingPage() {
                                         bg-blue-100
                                     "
                                 >
-
                                     <BedDouble
                                         size={21}
                                         className="text-blue-600"
                                     />
-
                                 </div>
 
 
@@ -696,9 +1020,7 @@ function LandingPage() {
                                         text-slate-500
                                     "
                                 >
-
                                     Pilihan kamar dari ADELINA KOST 2
-
                                 </p>
 
                             </div>
@@ -725,11 +1047,8 @@ function LandingPage() {
                                     hover:bg-slate-50
                                 "
                             >
-
                                 Lihat kamar
-
                                 <ArrowRight size={15} />
-
                             </Link>
 
                         </div>
@@ -762,7 +1081,13 @@ function LandingPage() {
 
                     <div className="max-w-2xl">
 
-                        <p className="text-sm font-semibold text-blue-600">
+                        <p
+                            className="
+                                text-sm
+                                font-semibold
+                                text-blue-600
+                            "
+                        >
                             Fasilitas
                         </p>
 
@@ -789,11 +1114,9 @@ function LandingPage() {
                                 sm:text-base
                             "
                         >
-
                             ADELINA KOST menyediakan fasilitas
                             yang dirancang agar penghuni dapat
                             tinggal dengan nyaman.
-
                         </p>
 
                     </div>
@@ -883,11 +1206,15 @@ function LandingPage() {
                     "
                 >
 
-                    {/* HEADER */}
-
                     <div className="max-w-3xl">
 
-                        <p className="text-sm font-semibold text-blue-600">
+                        <p
+                            className="
+                                text-sm
+                                font-semibold
+                                text-blue-600
+                            "
+                        >
                             Lokasi
                         </p>
 
@@ -914,18 +1241,14 @@ function LandingPage() {
                                 sm:text-base
                             "
                         >
-
                             ADELINA KOST memiliki dua bangunan
                             dengan lokasi yang berbeda. Pilih lokasi
                             bangunan yang paling sesuai dengan
                             kebutuhanmu.
-
                         </p>
 
                     </div>
 
-
-                    {/* LOCATION CARDS */}
 
                     <div
                         className="
@@ -948,6 +1271,9 @@ function LandingPage() {
                                 bg-white
                                 p-7
                                 shadow-sm
+                                transition
+                                hover:-translate-y-1
+                                hover:shadow-lg
                                 sm:p-8
                             "
                         >
@@ -963,12 +1289,10 @@ function LandingPage() {
                                     bg-blue-50
                                 "
                             >
-
                                 <MapPin
                                     size={23}
                                     className="text-blue-600"
                                 />
-
                             </div>
 
 
@@ -996,20 +1320,6 @@ function LandingPage() {
                             >
                                 ADELINA KOST 1
                             </h3>
-
-
-                            <p
-                                className="
-                                    mt-4
-                                    text-sm
-                                    leading-6
-                                    text-slate-600
-                                "
-                            >
-
-
-
-                            </p>
 
 
                             <div
@@ -1040,7 +1350,6 @@ function LandingPage() {
 
                                     <p
                                         className="
-                                            mt-1
                                             text-sm
                                             leading-6
                                             text-slate-500
@@ -1060,10 +1369,8 @@ function LandingPage() {
                                             text-slate-500
                                         "
                                     >
-
                                         Lihat lokasi lengkap
                                         melalui Google Maps.
-
                                     </p>
 
                                 </div>
@@ -1116,6 +1423,9 @@ function LandingPage() {
                                 bg-white
                                 p-7
                                 shadow-sm
+                                transition
+                                hover:-translate-y-1
+                                hover:shadow-lg
                                 sm:p-8
                             "
                         >
@@ -1131,12 +1441,10 @@ function LandingPage() {
                                     bg-blue-50
                                 "
                             >
-
                                 <MapPin
                                     size={23}
                                     className="text-blue-600"
                                 />
-
                             </div>
 
 
@@ -1164,20 +1472,6 @@ function LandingPage() {
                             >
                                 ADELINA KOST 2
                             </h3>
-
-
-                            <p
-                                className="
-                                    mt-4
-                                    text-sm
-                                    leading-6
-                                    text-slate-600
-                                "
-                            >
-
-
-
-                            </p>
 
 
                             <div
@@ -1208,7 +1502,6 @@ function LandingPage() {
 
                                     <p
                                         className="
-                                            mt-1
                                             text-sm
                                             leading-6
                                             text-slate-500
@@ -1228,10 +1521,8 @@ function LandingPage() {
                                             text-slate-500
                                         "
                                     >
-
                                         Lihat lokasi lengkap
                                         melalui Google Maps.
-
                                     </p>
 
                                 </div>
@@ -1284,11 +1575,34 @@ function LandingPage() {
 
             <section
                 id="tentang"
-                className="bg-slate-950 py-20 text-white"
+                className="
+                    relative
+                    overflow-hidden
+                    bg-slate-950
+                    py-20
+                    text-white
+                "
             >
 
                 <div
                     className="
+                        pointer-events-none
+                        absolute
+                        left-1/2
+                        top-0
+                        h-72
+                        w-72
+                        -translate-x-1/2
+                        rounded-full
+                        bg-blue-600/10
+                        blur-3xl
+                    "
+                />
+
+
+                <div
+                    className="
+                        relative
                         mx-auto
                         max-w-4xl
                         px-4
@@ -1298,7 +1612,13 @@ function LandingPage() {
                     "
                 >
 
-                    <p className="text-sm font-semibold text-blue-400">
+                    <p
+                        className="
+                            text-sm
+                            font-semibold
+                            text-blue-400
+                        "
+                    >
                         Tentang ADELINA KOST
                     </p>
 
@@ -1327,11 +1647,9 @@ function LandingPage() {
                             sm:text-base
                         "
                     >
-
                         Kami menyediakan tempat tinggal yang nyaman
                         dengan fasilitas yang dibutuhkan untuk menunjang
                         aktivitas sehari-hari.
-
                     </p>
 
 
@@ -1349,15 +1667,14 @@ function LandingPage() {
                             text-sm
                             font-semibold
                             text-white
+                            shadow-lg
+                            shadow-blue-950/30
                             transition
                             hover:bg-blue-700
                         "
                     >
-
                         Cari Kamar
-
                         <ArrowRight size={17} />
-
                     </Link>
 
                 </div>
@@ -1383,7 +1700,7 @@ function FeatureItem({ children }) {
             className="
                 flex
                 items-center
-                gap-2
+                gap-2.5
                 text-sm
                 text-slate-600
             "
@@ -1391,7 +1708,10 @@ function FeatureItem({ children }) {
 
             <CheckCircle2
                 size={17}
-                className="shrink-0 text-blue-600"
+                className="
+                    shrink-0
+                    text-blue-600
+                "
             />
 
             {children}
@@ -1424,8 +1744,10 @@ function Facility({
                 p-5
                 shadow-sm
                 transition
+                duration-200
                 hover:-translate-y-1
-                hover:shadow-md
+                hover:border-blue-100
+                hover:shadow-lg
             "
         >
 

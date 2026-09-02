@@ -6136,12 +6136,74 @@ const Payments = () => {
                     </div>
 
                 )}
+            {/* MODAL TOLAK PEMBAYARAN */}
+            {showRejectModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+
+                        <h2 className="text-lg font-bold text-gray-800">
+                            Tolak Pembayaran
+                        </h2>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                            Masukkan alasan penolakan pembayaran.
+                        </p>
+
+                        <textarea
+                            value={rejectReason}
+                            onChange={(e) =>
+                                setRejectReason(e.target.value)
+                            }
+                            placeholder="Contoh: Bukti pembayaran tidak sesuai."
+                            rows={4}
+                            className="mt-4 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none focus:border-blue-500"
+                        />
+
+                        {error && (
+                            <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="mt-5 flex justify-end gap-3">
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowRejectModal(false);
+                                    setPaymentToReject(null);
+                                    setRejectReason("");
+                                    setError("");
+                                }}
+                                disabled={rejectingId !== null}
+                                className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                            >
+                                Batal
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleReject}
+                                disabled={
+                                    rejectingId === paymentToReject?.id
+                                }
+                                className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+                            >
+                                {rejectingId === paymentToReject?.id
+                                    ? "Menolak..."
+                                    : "Tolak Pembayaran"}
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
         </div>
 
     );
 
 };
-
 
 export default Payments;

@@ -22,6 +22,7 @@ import {
     ArrowLeft,
     Loader2,
     Wallet,
+    Banknote,
 } from "lucide-react";
 
 import { getRoomById } from "../../services/roomService";
@@ -35,37 +36,13 @@ import { getRoomById } from "../../services/roomService";
 //
 // /tenant/pembayaran-booking?roomId=17&paymentType=dp
 //
-// PENTING:
-//
-// Pada mode ini BELUM ADA booking_id.
-//
-// Booking baru dibuat ketika user benar-benar
-// submit pembayaran DP.
-//
-// Alur:
-//
-// roomId
-//   ↓
-// tampilkan kamar
-//   ↓
-// upload bukti DP
-//   ↓
-// submit pembayaran
-//   ↓
-// backend membuat room_booking
-//   ↓
-// backend membuat payment
+// Booking baru dibuat ketika user submit pembayaran DP.
 //
 // -----------------------------------------------------
 //
 // MODE 2 : SISA SEWA
 //
 // /tenant/pembayaran-booking/:bookingId?type=remaining
-//
-// Booking sudah ada.
-//
-// Digunakan untuk pembayaran sisa:
-// Rp750.000 - Rp25.000 = Rp725.000
 //
 // =====================================================
 
@@ -74,23 +51,13 @@ function TenantBookingPayment() {
 
     const navigate = useNavigate();
 
-    const { bookingId } =
-        useParams();
+    const { bookingId } = useParams();
 
-    const [searchParams] =
-        useSearchParams();
+    const [searchParams] = useSearchParams();
 
 
     // =====================================================
     // PAYMENT TYPE
-    // =====================================================
-    //
-    // Mendukung:
-    //
-    // ?paymentType=dp
-    // ?type=booking
-    // ?type=remaining
-    //
     // =====================================================
 
     const paymentType =
@@ -166,18 +133,17 @@ function TenantBookingPayment() {
     // =====================================================
     // LAMA BOOKING
     // =====================================================
-    //
-    // DP sekarang menggunakan 1 hari.
-    //
-    // Nominal:
-    //
-    // Rp750.000 / 30
-    // = Rp25.000
-    //
-    // =====================================================
 
     const [bookingDays, setBookingDays] =
         useState(1);
+
+
+    // =====================================================
+    // METODE PEMBAYARAN
+    // =====================================================
+
+    const [paymentMethod, setPaymentMethod] =
+        useState("transfer");
 
 
     // =====================================================
@@ -211,9 +177,7 @@ function TenantBookingPayment() {
                 // =============================================
 
                 const token =
-                    localStorage.getItem(
-                        "token"
-                    );
+                    localStorage.getItem("token");
 
 
                 if (!token) {
@@ -231,10 +195,6 @@ function TenantBookingPayment() {
 
                 if (isDpPayment) {
 
-                    // =============================================
-                    // ROOM ID WAJIB ADA
-                    // =============================================
-
                     if (!roomId) {
 
                         throw new Error(
@@ -249,15 +209,7 @@ function TenantBookingPayment() {
                     // =============================================
 
                     const roomResponse =
-                        await getRoomById(
-                            roomId
-                        );
-
-
-                    console.log(
-                        "ROOM PAYMENT RESPONSE:",
-                        roomResponse
-                    );
+                        await getRoomById(roomId);
 
 
                     const data =
@@ -296,18 +248,11 @@ function TenantBookingPayment() {
                     }
 
 
-                    setRoomData(
-                        data
-                    );
+                    setRoomData(data);
 
 
                     // =============================================
                     // AMBIL DATA TENANT
-                    // =============================================
-                    //
-                    // Data ini hanya untuk tampilan.
-                    // Booking belum dibuat.
-                    //
                     // =============================================
 
                     try {
@@ -329,29 +274,24 @@ function TenantBookingPayment() {
                             );
 
 
-                        if (
-                            tenantResponse.ok
-                        ) {
+                        if (tenantResponse.ok) {
 
                             const tenantResult =
                                 await tenantResponse.json();
 
 
-                            if (
-                                tenantResult?.success
-                            ) {
+                            if (tenantResult?.success) {
 
                                 setTenantData(
-                                    tenantResult?.data?.tenant || null
+                                    tenantResult?.data?.tenant ||
+                                    null
                                 );
 
                             }
 
                         }
 
-                    } catch (
-                    tenantError
-                    ) {
+                    } catch (tenantError) {
 
                         console.error(
                             "Gagal mengambil data tenant:",
@@ -379,16 +319,6 @@ function TenantBookingPayment() {
                 }
 
 
-                // =============================================
-                // REQUEST BOOKING
-                // =============================================
-
-                console.log(
-                    "BOOKING ID:",
-                    bookingId
-                );
-
-
                 const response =
                     await fetch(
                         `http://localhost:5000/api/bookings/${bookingId}`,
@@ -396,27 +326,18 @@ function TenantBookingPayment() {
                             method: "GET",
 
                             headers: {
-
                                 Authorization:
                                     `Bearer ${token}`,
 
                                 "Content-Type":
                                     "application/json",
-
                             },
-
                         }
                     );
 
 
                 const data =
                     await response.json();
-
-
-                console.log(
-                    "BOOKING RESPONSE:",
-                    data
-                );
 
 
                 if (
@@ -483,21 +404,20 @@ function TenantBookingPayment() {
     // FORMAT RUPIAH
     // =====================================================
 
-    const formatPrice =
-        (price) => {
+    const formatPrice = (price) => {
 
-            return new Intl.NumberFormat(
-                "id-ID",
-                {
-                    style: "currency",
-                    currency: "IDR",
-                    maximumFractionDigits: 0,
-                }
-            ).format(
-                Number(price) || 0
-            );
+        return new Intl.NumberFormat(
+            "id-ID",
+            {
+                style: "currency",
+                currency: "IDR",
+                maximumFractionDigits: 0,
+            }
+        ).format(
+            Number(price) || 0
+        );
 
-        };
+    };
 
 
     // =====================================================
@@ -506,12 +426,8 @@ function TenantBookingPayment() {
 
     const tenant =
         isDpPayment
-            ? (
-                tenantData || {}
-            )
-            : (
-                booking?.tenant || {}
-            );
+            ? (tenantData || {})
+            : (booking?.tenant || {});
 
 
     // =====================================================
@@ -520,12 +436,8 @@ function TenantBookingPayment() {
 
     const room =
         isDpPayment
-            ? (
-                roomData || {}
-            )
-            : (
-                booking?.room || {}
-            );
+            ? (roomData || {})
+            : (booking?.room || {});
 
 
     // =====================================================
@@ -560,8 +472,7 @@ function TenantBookingPayment() {
         useMemo(() => {
 
             return Math.max(
-                roomPrice -
-                totalPaid,
+                roomPrice - totalPaid,
                 0
             );
 
@@ -574,19 +485,13 @@ function TenantBookingPayment() {
     // =====================================================
     // NOMINAL DP
     // =====================================================
-    //
-    // Rp750.000 / 30 = Rp25.000
-    //
-    // Tetapi kita hitung berdasarkan harga kamar,
-    // sehingga tidak hardcode nominal Rp25.000.
-    //
-    // =====================================================
 
     const dpAmount =
         useMemo(() => {
 
             return Math.round(
-                (roomPrice / 30) * bookingDays
+                (roomPrice / 30) *
+                bookingDays
             );
 
         }, [
@@ -598,21 +503,13 @@ function TenantBookingPayment() {
     // =====================================================
     // TOTAL BOOKING LAMA
     // =====================================================
-    //
-    // Dipertahankan untuk kompatibilitas mode booking lama.
-    //
-    // =====================================================
 
     const totalBookingPrice =
         useMemo(() => {
 
             return Math.round(
-                (
-                    roomPrice / 30
-                ) *
-                Number(
-                    bookingDays
-                )
+                (roomPrice / 30) *
+                Number(bookingDays)
             );
 
         }, [
@@ -641,9 +538,7 @@ function TenantBookingPayment() {
         (event) => {
 
             const days =
-                Number(
-                    event.target.value
-                );
+                Number(event.target.value);
 
 
             if (
@@ -656,9 +551,37 @@ function TenantBookingPayment() {
             }
 
 
-            setBookingDays(
-                days
-            );
+            setBookingDays(days);
+
+        };
+
+
+    // =====================================================
+    // HANDLE PAYMENT METHOD
+    // =====================================================
+
+    const handlePaymentMethodChange =
+        (method) => {
+
+            setPaymentMethod(method);
+
+            setError("");
+
+
+            // =============================================
+            // CASH
+            // =============================================
+            //
+            // Cash tidak membutuhkan bukti transfer.
+            //
+            // =============================================
+
+            if (method === "cash") {
+
+                setProofFile(null);
+                setFileName("");
+
+            }
 
         };
 
@@ -677,7 +600,6 @@ function TenantBookingPayment() {
             if (!file) {
 
                 setProofFile(null);
-
                 setFileName("");
 
                 return;
@@ -690,20 +612,16 @@ function TenantBookingPayment() {
             // =============================================
 
             const allowedTypes = [
-
                 "image/jpeg",
                 "image/jpg",
                 "image/png",
                 "image/webp",
                 "application/pdf",
-
             ];
 
 
             if (
-                !allowedTypes.includes(
-                    file.type
-                )
+                !allowedTypes.includes(file.type)
             ) {
 
                 setError(
@@ -711,7 +629,6 @@ function TenantBookingPayment() {
                 );
 
                 setProofFile(null);
-
                 setFileName("");
 
                 return;
@@ -724,14 +641,11 @@ function TenantBookingPayment() {
             // =============================================
 
             const maxSize =
-                5 *
-                1024 *
-                1024;
+                5 * 1024 * 1024;
 
 
             if (
-                file.size >
-                maxSize
+                file.size > maxSize
             ) {
 
                 setError(
@@ -739,7 +653,6 @@ function TenantBookingPayment() {
                 );
 
                 setProofFile(null);
-
                 setFileName("");
 
                 return;
@@ -753,13 +666,9 @@ function TenantBookingPayment() {
 
             setError("");
 
-            setProofFile(
-                file
-            );
+            setProofFile(file);
 
-            setFileName(
-                file.name
-            );
+            setFileName(file.name);
 
         };
 
@@ -782,9 +691,7 @@ function TenantBookingPayment() {
                 // =============================================
 
                 const token =
-                    localStorage.getItem(
-                        "token"
-                    );
+                    localStorage.getItem("token");
 
 
                 if (!token) {
@@ -802,10 +709,6 @@ function TenantBookingPayment() {
 
                 if (isDpPayment) {
 
-                    // =============================================
-                    // ROOM ID
-                    // =============================================
-
                     if (!roomId) {
 
                         throw new Error(
@@ -814,10 +717,6 @@ function TenantBookingPayment() {
 
                     }
 
-
-                    // =============================================
-                    // ROOM
-                    // =============================================
 
                     if (!roomData) {
 
@@ -851,12 +750,10 @@ function TenantBookingPayment() {
 
 
                     // =============================================
-                    // HARGA
+                    // VALIDASI HARGA
                     // =============================================
 
-                    if (
-                        roomPrice <= 0
-                    ) {
+                    if (roomPrice <= 0) {
 
                         throw new Error(
                             "Harga kamar tidak valid."
@@ -866,12 +763,10 @@ function TenantBookingPayment() {
 
 
                     // =============================================
-                    // NOMINAL DP
+                    // VALIDASI NOMINAL
                     // =============================================
 
-                    if (
-                        dpAmount <= 0
-                    ) {
+                    if (dpAmount <= 0) {
 
                         throw new Error(
                             "Nominal DP tidak valid."
@@ -881,13 +776,16 @@ function TenantBookingPayment() {
 
 
                     // =============================================
-                    // FILE
+                    // VALIDASI BUKTI TRANSFER
                     // =============================================
 
-                    if (!proofFile) {
+                    if (
+                        paymentMethod === "transfer" &&
+                        !proofFile
+                    ) {
 
                         throw new Error(
-                            "Bukti pembayaran wajib diupload."
+                            "Bukti pembayaran transfer wajib diupload."
                         );
 
                     }
@@ -901,44 +799,19 @@ function TenantBookingPayment() {
                         new FormData();
 
 
-                    // =============================================
-                    // ROOM ID
-                    // =============================================
-
                     formData.append(
                         "room_id",
-                        String(
-                            roomId
-                        )
+                        String(roomId)
                     );
 
-
-                    // =============================================
-                    // PAYMENT TYPE
-                    // =============================================
 
                     formData.append(
                         "payment_type",
                         "booking"
                     );
 
+                    // formData.append("payment_method", paymentMethod);
 
-                    // =============================================
-                    // BOOKING DAYS
-                    // =============================================
-                    //
-                    // DP = 1 hari.
-                    //
-                    // Backend existing menggunakan:
-                    //
-                    // room.price / 30 × booking_days
-                    //
-                    // sehingga Rp750.000:
-                    //
-                    // 750.000 / 30 × 1
-                    // = Rp25.000
-                    //
-                    // =============================================
 
                     formData.append(
                         "booking_days",
@@ -946,15 +819,19 @@ function TenantBookingPayment() {
                     );
 
 
+                    formData.append(
+                        "amount",
+                        String(dpAmount)
+                    );
+
+
                     // =============================================
-                    // AMOUNT
+                    // PAYMENT METHOD
                     // =============================================
 
                     formData.append(
-                        "amount",
-                        String(
-                            dpAmount
-                        )
+                        "payment_method",
+                        paymentMethod
                     );
 
 
@@ -962,61 +839,38 @@ function TenantBookingPayment() {
                     // PROOF
                     // =============================================
 
-                    formData.append(
-                        "proof_file",
-                        proofFile
-                    );
+                    if (paymentMethod === "transfer" && proofFile) {
+                        formData.append("proof_file", proofFile);
+                    }
 
 
                     console.log(
-                        "SUBMIT DP ROOM:",
-                        roomId
-                    );
-
-
-                    console.log(
-                        "DP AMOUNT:",
-                        dpAmount
+                        "SUBMIT DP:",
+                        {
+                            roomId,
+                            bookingDays,
+                            amount: dpAmount,
+                            paymentMethod,
+                        }
                     );
 
 
                     // =============================================
                     // REQUEST
                     // =============================================
-                    //
-                    // PENTING:
-                    //
-                    // Endpoint ini harus menerima room_id
-                    // ketika booking belum dibuat.
-                    //
-                    // Backend akan membuat:
-                    //
-                    // room_bookings
-                    // +
-                    // payments
-                    //
-                    // dalam satu transaksi.
-                    //
-                    // =============================================
 
                     const response =
                         await fetch(
-                            isRemainingPayment
-                                ? "http://localhost:5000/api/payments/booking-remaining"
-                                : "http://localhost:5000/api/payments/booking",
+                            "http://localhost:5000/api/payments/booking-initial",
                             {
                                 method: "POST",
 
                                 headers: {
-
                                     Authorization:
                                         `Bearer ${token}`,
-
                                 },
 
-                                body:
-                                    formData,
-
+                                body: formData,
                             }
                         );
 
@@ -1044,14 +898,7 @@ function TenantBookingPayment() {
                     }
 
 
-                    // =============================================
-                    // SUCCESS
-                    // =============================================
-
-                    setSuccess(
-                        true
-                    );
-
+                    setSuccess(true);
 
                     return;
 
@@ -1094,9 +941,7 @@ function TenantBookingPayment() {
                 // VALIDASI HARGA
                 // =============================================
 
-                if (
-                    roomPrice <= 0
-                ) {
+                if (roomPrice <= 0) {
 
                     throw new Error(
                         "Harga kamar tidak valid."
@@ -1125,9 +970,7 @@ function TenantBookingPayment() {
                 // VALIDASI TOTAL
                 // =============================================
 
-                if (
-                    totalPayment <= 0
-                ) {
+                if (totalPayment <= 0) {
 
                     throw new Error(
                         "Total pembayaran tidak valid."
@@ -1137,13 +980,16 @@ function TenantBookingPayment() {
 
 
                 // =============================================
-                // VALIDASI FILE
+                // VALIDASI TRANSFER
                 // =============================================
 
-                if (!proofFile) {
+                if (
+                    paymentMethod === "transfer" &&
+                    !proofFile
+                ) {
 
                     throw new Error(
-                        "Bukti pembayaran wajib diupload."
+                        "Bukti pembayaran transfer wajib diupload."
                     );
 
                 }
@@ -1157,21 +1003,11 @@ function TenantBookingPayment() {
                     new FormData();
 
 
-                // =============================================
-                // BOOKING ID
-                // =============================================
-
                 formData.append(
                     "booking_id",
-                    String(
-                        bookingId
-                    )
+                    String(bookingId)
                 );
 
-
-                // =============================================
-                // PAYMENT TYPE
-                // =============================================
 
                 formData.append(
                     "payment_type",
@@ -1181,15 +1017,19 @@ function TenantBookingPayment() {
                 );
 
 
+                formData.append(
+                    "amount",
+                    String(totalPayment)
+                );
+
+
                 // =============================================
-                // AMOUNT
+                // PAYMENT METHOD
                 // =============================================
 
                 formData.append(
-                    "amount",
-                    String(
-                        totalPayment
-                    )
+                    "payment_method",
+                    paymentMethod
                 );
 
 
@@ -1197,15 +1037,11 @@ function TenantBookingPayment() {
                 // BOOKING DAYS
                 // =============================================
 
-                if (
-                    !isRemainingPayment
-                ) {
+                if (!isRemainingPayment) {
 
                     formData.append(
                         "booking_days",
-                        String(
-                            bookingDays
-                        )
+                        String(bookingDays)
                     );
 
                 }
@@ -1215,34 +1051,41 @@ function TenantBookingPayment() {
                 // PROOF
                 // =============================================
 
-                formData.append(
-                    "proof_file",
+                if (
+                    paymentMethod === "transfer" &&
                     proofFile
-                );
+                ) {
+
+                    formData.append(
+                        "proof_file",
+                        proofFile
+                    );
+
+                }
 
 
                 // =============================================
-                // REQUEST EXISTING BOOKING
+                // ENDPOINT
                 // =============================================
+
+                const endpoint =
+                    isRemainingPayment
+                        ? "http://localhost:5000/api/payments/booking-remaining"
+                        : "http://localhost:5000/api/payments/booking-initial";
+
 
                 const response =
                     await fetch(
-                        isRemainingPayment
-                            ? "http://localhost:5000/api/payments/booking-remaining"
-                            : "http://localhost:5000/api/payments/booking",
+                        endpoint,
                         {
                             method: "POST",
 
                             headers: {
-
                                 Authorization:
                                     `Bearer ${token}`,
-
                             },
 
-                            body:
-                                formData,
-
+                            body: formData,
                         }
                     );
 
@@ -1270,9 +1113,7 @@ function TenantBookingPayment() {
                 }
 
 
-                setSuccess(
-                    true
-                );
+                setSuccess(true);
 
 
             } catch (error) {
@@ -1317,9 +1158,7 @@ function TenantBookingPayment() {
                         />
 
                         <p className="mt-4 text-sm font-medium text-slate-600">
-
                             Memuat informasi pembayaran...
-
                         </p>
 
                     </div>
@@ -1354,20 +1193,13 @@ function TenantBookingPayment() {
                             ⚠️
                         </div>
 
-
                         <h1 className="mt-4 text-xl font-bold text-red-700">
-
                             Pembayaran Tidak Dapat Dilanjutkan
-
                         </h1>
 
-
                         <p className="mt-2 text-sm leading-6 text-red-600">
-
                             {error}
-
                         </p>
-
 
                         <button
                             type="button"
@@ -1381,9 +1213,7 @@ function TenantBookingPayment() {
                             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
                         >
 
-                            <ArrowLeft
-                                size={17}
-                            />
+                            <ArrowLeft size={17} />
 
                             Kembali
 
@@ -1416,9 +1246,7 @@ function TenantBookingPayment() {
 
                         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
 
-                            <CheckCircle2
-                                size={44}
-                            />
+                            <CheckCircle2 size={44} />
 
                         </div>
 
@@ -1438,10 +1266,10 @@ function TenantBookingPayment() {
                         <p className="mt-3 text-sm leading-6 text-slate-500">
 
                             {isDpPayment
-                                ? "Bukti pembayaran DP telah berhasil dikirim. Booking sekarang tercatat dan pembayaran sedang menunggu verifikasi pengelola ADELINA KOST."
+                                ? "Pembayaran DP telah berhasil dikirim. Booking tercatat dan pembayaran sedang menunggu verifikasi pengelola ADELINA KOST."
                                 : isRemainingPayment
-                                    ? "Pembayaran sisa sewa bulanan telah berhasil dikirim dan sedang menunggu verifikasi pengelola ADELINA KOST."
-                                    : "Bukti pembayaran booking telah berhasil dikirim dan sedang menunggu verifikasi pengelola ADELINA KOST."
+                                    ? "Pembayaran sisa sewa telah berhasil dikirim dan sedang menunggu verifikasi pengelola ADELINA KOST."
+                                    : "Pembayaran booking telah berhasil dikirim dan sedang menunggu verifikasi pengelola ADELINA KOST."
                             }
 
                         </p>
@@ -1450,14 +1278,11 @@ function TenantBookingPayment() {
                         <div className="mt-6 rounded-2xl bg-slate-50 p-5 text-left">
 
                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                 Ringkasan Pembayaran
-
                             </p>
 
 
                             <div className="mt-4 space-y-3">
-
 
                                 {/* KAMAR */}
 
@@ -1466,7 +1291,6 @@ function TenantBookingPayment() {
                                     <span className="text-sm text-slate-500">
                                         Kamar
                                     </span>
-
 
                                     <span className="text-sm font-bold text-slate-800">
 
@@ -1488,7 +1312,6 @@ function TenantBookingPayment() {
                                         Jenis Pembayaran
                                     </span>
 
-
                                     <span className="text-sm font-bold text-slate-800">
 
                                         {isDpPayment
@@ -1503,16 +1326,33 @@ function TenantBookingPayment() {
                                 </div>
 
 
+                                {/* METODE */}
+
+                                <div className="flex items-center justify-between">
+
+                                    <span className="text-sm text-slate-500">
+                                        Metode Pembayaran
+                                    </span>
+
+                                    <span className="text-sm font-bold capitalize text-slate-800">
+
+                                        {paymentMethod === "cash"
+                                            ? "Cash / Tunai"
+                                            : "Transfer Bank"
+                                        }
+
+                                    </span>
+
+                                </div>
+
+
                                 {/* TOTAL */}
 
                                 <div className="flex items-center justify-between border-t border-slate-200 pt-3">
 
                                     <span className="text-sm font-bold text-slate-700">
-
                                         Total Pembayaran
-
                                     </span>
-
 
                                     <span className="text-lg font-bold text-blue-600">
 
@@ -1541,9 +1381,7 @@ function TenantBookingPayment() {
                         <button
                             type="button"
                             onClick={() =>
-                                navigate(
-                                    "/tenant/dashboard"
-                                )
+                                navigate("/tenant/dashboard")
                             }
                             className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700"
                         >
@@ -1590,9 +1428,7 @@ function TenantBookingPayment() {
                     className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-blue-600"
                 >
 
-                    <ArrowLeft
-                        size={17}
-                    />
+                    <ArrowLeft size={17} />
 
                     {isDpPayment
                         ? "Kembali ke detail kamar"
@@ -1609,9 +1445,7 @@ function TenantBookingPayment() {
                 <div className="mt-6">
 
                     <p className="text-sm font-bold text-blue-600">
-
                         ADELINA KOST
-
                     </p>
 
 
@@ -1665,9 +1499,7 @@ function TenantBookingPayment() {
 
                                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
 
-                                    <User
-                                        size={21}
-                                    />
+                                    <User size={21} />
 
                                 </div>
 
@@ -1675,16 +1507,11 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <h2 className="font-bold text-slate-900">
-
                                         Data Diri
-
                                     </h2>
 
-
                                     <p className="text-xs text-slate-500">
-
                                         Data dari registrasi akun
-
                                     </p>
 
                                 </div>
@@ -1694,17 +1521,13 @@ function TenantBookingPayment() {
 
                             <div className="mt-6 grid gap-5 sm:grid-cols-2">
 
-
                                 {/* NAMA */}
 
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         Nama Lengkap
-
                                     </p>
-
 
                                     <p className="mt-1 text-sm font-bold text-slate-800">
 
@@ -1724,11 +1547,8 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         Nomor HP
-
                                     </p>
-
 
                                     <div className="mt-1 flex items-center gap-2">
 
@@ -1736,7 +1556,6 @@ function TenantBookingPayment() {
                                             size={15}
                                             className="text-slate-400"
                                         />
-
 
                                         <p className="text-sm font-bold text-slate-800">
 
@@ -1757,11 +1576,8 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         NIK
-
                                     </p>
-
 
                                     <p className="mt-1 text-sm font-bold text-slate-800">
 
@@ -1780,17 +1596,12 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         Status
-
                                     </p>
-
 
                                     <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
 
-                                        <CheckCircle2
-                                            size={13}
-                                        />
+                                        <CheckCircle2 size={13} />
 
                                         Calon Penghuni
 
@@ -1813,9 +1624,7 @@ function TenantBookingPayment() {
 
                                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
 
-                                    <Building2
-                                        size={21}
-                                    />
+                                    <Building2 size={21} />
 
                                 </div>
 
@@ -1823,16 +1632,11 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <h2 className="font-bold text-slate-900">
-
                                         Informasi Kamar
-
                                     </h2>
 
-
                                     <p className="text-xs text-slate-500">
-
                                         Kamar yang akan dibooking
-
                                     </p>
 
                                 </div>
@@ -1842,17 +1646,13 @@ function TenantBookingPayment() {
 
                             <div className="mt-6 grid gap-5 sm:grid-cols-2">
 
-
                                 {/* KAMAR */}
 
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         Kamar
-
                                     </p>
-
 
                                     <p className="mt-1 text-xl font-bold text-slate-900">
 
@@ -1871,11 +1671,8 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         Bangunan
-
                                     </p>
-
 
                                     <p className="mt-1 text-sm font-bold text-slate-800">
 
@@ -1894,11 +1691,8 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         Lantai
-
                                     </p>
-
 
                                     <div className="mt-1 flex items-center gap-2">
 
@@ -1906,7 +1700,6 @@ function TenantBookingPayment() {
                                             size={15}
                                             className="text-slate-400"
                                         />
-
 
                                         <p className="text-sm font-bold text-slate-800">
 
@@ -1927,11 +1720,8 @@ function TenantBookingPayment() {
                                 <div>
 
                                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-
                                         Harga / Bulan
-
                                     </p>
-
 
                                     <p className="mt-1 text-sm font-bold text-slate-800">
 
@@ -1960,9 +1750,7 @@ function TenantBookingPayment() {
 
                                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-blue-600">
 
-                                        <CalendarDays
-                                            size={21}
-                                        />
+                                        <CalendarDays size={21} />
 
                                     </div>
 
@@ -1970,16 +1758,11 @@ function TenantBookingPayment() {
                                     <div>
 
                                         <h2 className="font-bold text-blue-900">
-
                                             DP Booking
-
                                         </h2>
 
-
                                         <p className="text-xs text-blue-600">
-
                                             Booking 1 hari
-
                                         </p>
 
                                     </div>
@@ -1992,11 +1775,8 @@ function TenantBookingPayment() {
                                     <div className="flex items-center justify-between">
 
                                         <span className="text-sm text-slate-500">
-
                                             Harga sewa / bulan
-
                                         </span>
-
 
                                         <span className="text-sm font-semibold text-slate-800">
 
@@ -2008,12 +1788,15 @@ function TenantBookingPayment() {
 
                                     </div>
 
+
                                     <div className="mt-4 flex items-center justify-between">
+
                                         <span className="text-sm text-slate-500">
                                             Tanggal booking
                                         </span>
 
                                         <span className="text-sm font-semibold text-slate-800">
+
                                             {new Date().toLocaleDateString(
                                                 "id-ID",
                                                 {
@@ -2022,18 +1805,24 @@ function TenantBookingPayment() {
                                                     year: "numeric",
                                                 }
                                             )}
+
                                         </span>
+
                                     </div>
 
 
                                     <div className="mt-3 flex items-center justify-between">
+
                                         <span className="text-sm text-slate-500">
                                             Selesai booking
                                         </span>
 
                                         <span className="text-sm font-semibold text-slate-800">
+
                                             {(() => {
-                                                const tanggalSelesai = new Date();
+
+                                                const tanggalSelesai =
+                                                    new Date();
 
                                                 tanggalSelesai.setDate(
                                                     tanggalSelesai.getDate() +
@@ -2048,9 +1837,13 @@ function TenantBookingPayment() {
                                                         year: "numeric",
                                                     }
                                                 );
+
                                             })()}
+
                                         </span>
+
                                     </div>
+
 
                                     <div className="mt-4 flex items-center justify-between">
 
@@ -2058,32 +1851,57 @@ function TenantBookingPayment() {
                                             Lama booking
                                         </span>
 
+
                                         <select
                                             value={bookingDays}
-                                            onChange={handleBookingDaysChange}
+                                            onChange={
+                                                handleBookingDaysChange
+                                            }
                                             className="
-            rounded-xl
-            border
-            border-slate-200
-            bg-white
-            px-4
-            py-2
-            text-sm
-            font-semibold
-            text-slate-800
-            outline-none
-            focus:border-blue-500
-            focus:ring-2
-            focus:ring-blue-100
-        "
+                                                rounded-xl
+                                                border
+                                                border-slate-200
+                                                bg-white
+                                                px-4
+                                                py-2
+                                                text-sm
+                                                font-semibold
+                                                text-slate-800
+                                                outline-none
+                                                focus:border-blue-500
+                                                focus:ring-2
+                                                focus:ring-blue-100
+                                            "
                                         >
-                                            <option value={1}>1 hari</option>
-                                            <option value={2}>2 hari</option>
-                                            <option value={3}>3 hari</option>
-                                            <option value={4}>4 hari</option>
-                                            <option value={5}>5 hari</option>
-                                            <option value={6}>6 hari</option>
-                                            <option value={7}>7 hari</option>
+
+                                            <option value={1}>
+                                                1 hari
+                                            </option>
+
+                                            <option value={2}>
+                                                2 hari
+                                            </option>
+
+                                            <option value={3}>
+                                                3 hari
+                                            </option>
+
+                                            <option value={4}>
+                                                4 hari
+                                            </option>
+
+                                            <option value={5}>
+                                                5 hari
+                                            </option>
+
+                                            <option value={6}>
+                                                6 hari
+                                            </option>
+
+                                            <option value={7}>
+                                                7 hari
+                                            </option>
+
                                         </select>
 
                                     </div>
@@ -2094,11 +1912,8 @@ function TenantBookingPayment() {
                                         <div className="flex items-center justify-between">
 
                                             <span className="text-sm font-bold text-slate-700">
-
                                                 DP yang harus dibayar
-
                                             </span>
-
 
                                             <span className="text-2xl font-bold text-blue-600">
 
@@ -2131,9 +1946,7 @@ function TenantBookingPayment() {
 
                                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
 
-                                        <Wallet
-                                            size={21}
-                                        />
+                                        <Wallet size={21} />
 
                                     </div>
 
@@ -2141,16 +1954,11 @@ function TenantBookingPayment() {
                                     <div>
 
                                         <h2 className="font-bold text-slate-900">
-
                                             Sisa Sewa Bulanan
-
                                         </h2>
 
-
                                         <p className="text-xs text-slate-500">
-
                                             Pembayaran setelah booking
-
                                         </p>
 
                                     </div>
@@ -2160,15 +1968,11 @@ function TenantBookingPayment() {
 
                                 <div className="mt-6 space-y-4">
 
-
                                     <div className="flex items-center justify-between">
 
                                         <span className="text-sm text-slate-500">
-
                                             Harga sewa / bulan
-
                                         </span>
-
 
                                         <span className="text-sm font-semibold text-slate-800">
 
@@ -2184,11 +1988,8 @@ function TenantBookingPayment() {
                                     <div className="flex items-center justify-between">
 
                                         <span className="text-sm text-slate-500">
-
                                             Sudah dibayar
-
                                         </span>
-
 
                                         <span className="text-sm font-semibold text-emerald-600">
 
@@ -2206,11 +2007,8 @@ function TenantBookingPayment() {
                                         <div className="flex items-center justify-between">
 
                                             <span className="text-sm font-bold text-slate-700">
-
                                                 Sisa pembayaran
-
                                             </span>
-
 
                                             <span className="text-2xl font-bold text-blue-600">
 
@@ -2246,9 +2044,7 @@ function TenantBookingPayment() {
 
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
 
-                                <Wallet
-                                    size={21}
-                                />
+                                <Wallet size={21} />
 
                             </div>
 
@@ -2256,11 +2052,8 @@ function TenantBookingPayment() {
                             <div>
 
                                 <h2 className="font-bold text-slate-900">
-
                                     Pembayaran
-
                                 </h2>
-
 
                                 <p className="text-xs text-slate-500">
 
@@ -2320,148 +2113,399 @@ function TenantBookingPayment() {
 
 
                         {/* =================================================
-                            REKENING TUJUAN
+                            METODE PEMBAYARAN
                         ================================================= */}
 
-                        <div className="mt-5 rounded-2xl border border-slate-200 p-4">
+                        <div className="mt-6">
 
-                            <div className="flex items-center gap-3">
-
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
-
-                                    <CreditCard
-                                        size={18}
-                                        className="text-slate-600"
-                                    />
-
-                                </div>
-
-
-                                <div>
-
-                                    <p className="text-xs text-slate-400">
-
-                                        Tujuan Transfer
-
-                                    </p>
-
-
-                                    <p className="text-sm font-bold text-slate-800">
-
-                                        BCA
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div className="mt-4 rounded-xl bg-slate-50 p-3">
-
-                                <p className="text-xs text-slate-400">
-
-                                    Nomor Rekening
-
-                                </p>
-
-
-                                <p className="mt-1 text-lg font-bold tracking-wide text-slate-900">
-
-                                    2200940604
-
-                                </p>
-
-                            </div>
-
-
-                            <div className="mt-3">
-
-                                <p className="text-xs text-slate-400">
-
-                                    Atas Nama
-
-                                </p>
-
-
-                                <p className="mt-1 text-sm font-bold text-slate-800">
-
-                                    Prediansyah Pasaribu
-
-                                </p>
-
-                            </div>
-
-
-                            <p className="mt-4 text-xs leading-5 text-slate-500">
-
-                                Silakan transfer sesuai dengan
-                                jumlah pembayaran yang tertera
-                                di atas.
-
+                            <p className="text-sm font-semibold text-slate-700">
+                                Metode Pembayaran
                             </p>
+
+
+                            <div className="mt-3 grid gap-3">
+
+
+                                {/* =================================================
+                                    TRANSFER
+                                ================================================= */}
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        handlePaymentMethodChange(
+                                            "transfer"
+                                        )
+                                    }
+                                    className={`
+                                        flex
+                                        items-center
+                                        gap-3
+                                        rounded-2xl
+                                        border
+                                        p-4
+                                        text-left
+                                        transition
+                                        ${paymentMethod === "transfer"
+                                            ? "border-blue-500 bg-blue-50 ring-2 ring-blue-100"
+                                            : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
+                                        }
+                                    `}
+                                >
+
+                                    <div
+                                        className={`
+                                            flex
+                                            h-11
+                                            w-11
+                                            shrink-0
+                                            items-center
+                                            justify-center
+                                            rounded-xl
+                                            ${paymentMethod === "transfer"
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-slate-100 text-slate-500"
+                                            }
+                                        `}
+                                    >
+
+                                        <CreditCard size={20} />
+
+                                    </div>
+
+
+                                    <div className="flex-1">
+
+                                        <p className="text-sm font-bold text-slate-800">
+                                            Transfer Bank
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-slate-500">
+                                            Transfer ke rekening ADELINA KOST
+                                        </p>
+
+                                    </div>
+
+
+                                    <div
+                                        className={`
+                                            h-5
+                                            w-5
+                                            rounded-full
+                                            border-2
+                                            ${paymentMethod === "transfer"
+                                                ? "border-blue-600 bg-blue-600"
+                                                : "border-slate-300"
+                                            }
+                                        `}
+                                    >
+
+                                        {paymentMethod === "transfer" && (
+
+                                            <div className="mx-auto mt-1 h-1.5 w-1.5 rounded-full bg-white" />
+
+                                        )}
+
+                                    </div>
+
+                                </button>
+
+
+                                {/* =================================================
+                                    CASH
+                                ================================================= */}
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        handlePaymentMethodChange(
+                                            "cash"
+                                        )
+                                    }
+                                    className={`
+                                        flex
+                                        items-center
+                                        gap-3
+                                        rounded-2xl
+                                        border
+                                        p-4
+                                        text-left
+                                        transition
+                                        ${paymentMethod === "cash"
+                                            ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100"
+                                            : "border-slate-200 bg-white hover:border-emerald-200 hover:bg-slate-50"
+                                        }
+                                    `}
+                                >
+
+                                    <div
+                                        className={`
+                                            flex
+                                            h-11
+                                            w-11
+                                            shrink-0
+                                            items-center
+                                            justify-center
+                                            rounded-xl
+                                            ${paymentMethod === "cash"
+                                                ? "bg-emerald-600 text-white"
+                                                : "bg-slate-100 text-slate-500"
+                                            }
+                                        `}
+                                    >
+
+                                        <Banknote size={20} />
+
+                                    </div>
+
+
+                                    <div className="flex-1">
+
+                                        <p className="text-sm font-bold text-slate-800">
+                                            Cash / Tunai
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-slate-500">
+                                            Bayar langsung kepada pengelola
+                                        </p>
+
+                                    </div>
+
+
+                                    <div
+                                        className={`
+                                            h-5
+                                            w-5
+                                            rounded-full
+                                            border-2
+                                            ${paymentMethod === "cash"
+                                                ? "border-emerald-600 bg-emerald-600"
+                                                : "border-slate-300"
+                                            }
+                                        `}
+                                    >
+
+                                        {paymentMethod === "cash" && (
+
+                                            <div className="mx-auto mt-1 h-1.5 w-1.5 rounded-full bg-white" />
+
+                                        )}
+
+                                    </div>
+
+                                </button>
+
+                            </div>
 
                         </div>
 
 
                         {/* =================================================
-                            UPLOAD BUKTI
+                            TRANSFER INFORMATION
                         ================================================= */}
 
-                        <div className="mt-6">
+                        {paymentMethod === "transfer" && (
 
-                            <label
-                                htmlFor="proofFile"
-                                className="text-sm font-semibold text-slate-700"
-                            >
+                            <div className="mt-5 rounded-2xl border border-slate-200 p-4">
 
-                                Bukti Pembayaran
+                                <div className="flex items-center gap-3">
 
-                            </label>
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
 
+                                        <CreditCard
+                                            size={18}
+                                            className="text-slate-600"
+                                        />
 
-                            <label
-                                htmlFor="proofFile"
-                                className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center transition hover:border-blue-300 hover:bg-blue-50"
-                            >
-
-                                <Upload
-                                    size={28}
-                                    className="text-blue-500"
-                                />
+                                    </div>
 
 
-                                <p className="mt-3 text-sm font-bold text-slate-700">
+                                    <div>
 
-                                    {fileName
-                                        ? fileName
-                                        : "Pilih bukti pembayaran"
-                                    }
+                                        <p className="text-xs text-slate-400">
+                                            Tujuan Transfer
+                                        </p>
+
+                                        <p className="text-sm font-bold text-slate-800">
+                                            BCA
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div className="mt-4 rounded-xl bg-slate-50 p-3">
+
+                                    <p className="text-xs text-slate-400">
+                                        Nomor Rekening
+                                    </p>
+
+                                    <p className="mt-1 text-lg font-bold tracking-wide text-slate-900">
+                                        2200940604
+                                    </p>
+
+                                </div>
+
+
+                                <div className="mt-3">
+
+                                    <p className="text-xs text-slate-400">
+                                        Atas Nama
+                                    </p>
+
+                                    <p className="mt-1 text-sm font-bold text-slate-800">
+                                        Prediansyah Pasaribu
+                                    </p>
+
+                                </div>
+
+
+                                <p className="mt-4 text-xs leading-5 text-slate-500">
+
+                                    Silakan transfer sesuai dengan
+                                    jumlah pembayaran yang tertera
+                                    di atas.
 
                                 </p>
 
+                            </div>
 
-                                <p className="mt-1 text-xs text-slate-400">
-
-                                    JPG, PNG, WEBP, atau PDF
-                                    maksimal 5 MB
-
-                                </p>
+                        )}
 
 
-                                <input
-                                    id="proofFile"
-                                    type="file"
-                                    accept=".jpg,.jpeg,.png,.webp,.pdf"
-                                    onChange={
-                                        handleFileChange
-                                    }
-                                    className="hidden"
-                                />
+                        {/* =================================================
+                            CASH INFORMATION
+                        ================================================= */}
 
-                            </label>
+                        {paymentMethod === "cash" && (
 
-                        </div>
+                            <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+
+                                <div className="flex items-start gap-3">
+
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600">
+
+                                        <Banknote size={19} />
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <p className="text-sm font-bold text-emerald-800">
+                                            Pembayaran Cash / Tunai
+                                        </p>
+
+                                        <p className="mt-1 text-xs leading-5 text-emerald-700">
+
+                                            Silakan lakukan pembayaran
+                                            tunai langsung kepada
+                                            pengelola ADELINA KOST.
+
+                                        </p>
+
+                                        <p className="mt-3 text-xs font-semibold text-emerald-800">
+
+                                            Nominal yang harus dibayar:
+
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-bold text-emerald-700">
+
+                                            {formatPrice(
+                                                totalPayment
+                                            )}
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        )}
+
+
+                        {/* =================================================
+                            UPLOAD BUKTI TRANSFER
+                        ================================================= */}
+
+                        {paymentMethod === "transfer" && (
+
+                            <div className="mt-6">
+
+                                <label
+                                    htmlFor="proofFile"
+                                    className="text-sm font-semibold text-slate-700"
+                                >
+                                    Bukti Pembayaran
+                                </label>
+
+
+                                <label
+                                    htmlFor="proofFile"
+                                    className="
+                                        mt-2
+                                        flex
+                                        cursor-pointer
+                                        flex-col
+                                        items-center
+                                        justify-center
+                                        rounded-2xl
+                                        border-2
+                                        border-dashed
+                                        border-slate-200
+                                        bg-slate-50
+                                        px-5
+                                        py-8
+                                        text-center
+                                        transition
+                                        hover:border-blue-300
+                                        hover:bg-blue-50
+                                    "
+                                >
+
+                                    <Upload
+                                        size={28}
+                                        className="text-blue-500"
+                                    />
+
+
+                                    <p className="mt-3 text-sm font-bold text-slate-700">
+
+                                        {fileName
+                                            ? fileName
+                                            : "Pilih bukti pembayaran"
+                                        }
+
+                                    </p>
+
+
+                                    <p className="mt-1 text-xs text-slate-400">
+
+                                        JPG, PNG, WEBP, atau PDF
+                                        maksimal 5 MB
+
+                                    </p>
+
+
+                                    <input
+                                        id="proofFile"
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.webp,.pdf"
+                                        onChange={
+                                            handleFileChange
+                                        }
+                                        className="hidden"
+                                    />
+
+                                </label>
+
+                            </div>
+
+                        )}
 
 
                         {/* =================================================
@@ -2473,9 +2517,7 @@ function TenantBookingPayment() {
                             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">
 
                                 <p className="text-sm font-medium text-red-700">
-
                                     {error}
-
                                 </p>
 
                             </div>
@@ -2489,9 +2531,7 @@ function TenantBookingPayment() {
 
                         <button
                             type="button"
-                            onClick={
-                                handleSubmit
-                            }
+                            onClick={handleSubmit}
                             disabled={
                                 submitting ||
                                 (
@@ -2499,7 +2539,26 @@ function TenantBookingPayment() {
                                     remainingAmount <= 0
                                 )
                             }
-                            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="
+                                mt-6
+                                flex
+                                w-full
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-xl
+                                bg-blue-600
+                                px-5
+                                py-3.5
+                                text-sm
+                                font-bold
+                                text-white
+                                shadow-sm
+                                transition
+                                hover:bg-blue-700
+                                disabled:cursor-not-allowed
+                                disabled:opacity-60
+                            "
                         >
 
                             {submitting ? (
@@ -2545,11 +2604,20 @@ function TenantBookingPayment() {
 
                             <p className="text-xs leading-5 text-amber-700">
 
-                                {isDpPayment
-                                    ? "Booking belum tercatat sebelum pembayaran DP dikirim. Setelah Anda submit pembayaran, sistem baru akan membuat booking dan mencatat pembayaran dengan status menunggu verifikasi."
-                                    : isRemainingPayment
-                                        ? "Pembayaran sisa sewa akan diperiksa oleh pengelola ADELINA KOST. Sewa belum dianggap lunas sebelum pembayaran diverifikasi."
-                                        : "Pembayaran akan diperiksa oleh pengelola ADELINA KOST. Booking belum dianggap selesai sebelum pembayaran diverifikasi."
+                                {paymentMethod === "cash"
+
+                                    ? "Pembayaran cash akan diperiksa dan diverifikasi oleh pengelola ADELINA KOST. Pembayaran belum dianggap sah sebelum diverifikasi."
+
+                                    : isDpPayment
+
+                                        ? "Booking belum tercatat sebelum pembayaran DP dikirim. Setelah Anda submit pembayaran, sistem akan membuat booking dan mencatat pembayaran dengan status menunggu verifikasi."
+
+                                        : isRemainingPayment
+
+                                            ? "Pembayaran sisa sewa akan diperiksa oleh pengelola ADELINA KOST. Sewa belum dianggap lunas sebelum pembayaran diverifikasi."
+
+                                            : "Pembayaran akan diperiksa oleh pengelola ADELINA KOST. Booking belum dianggap selesai sebelum pembayaran diverifikasi."
+
                                 }
 
                             </p>

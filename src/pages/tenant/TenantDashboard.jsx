@@ -2673,11 +2673,12 @@ function TenantDashboard() {
                                         {/* =================================================
             BAYAR SISA
         ================================================= */}
-                                        {Math.max(
-                                            Number(booking.room?.price || 0) -
-                                            Number(booking.booking?.total_paid || 0),
-                                            0
-                                        ) > 0 && (
+                                        {String(booking.booking?.status || "").toLowerCase() !== "rejected" &&
+                                            Math.max(
+                                                Number(booking.room?.price || 0) -
+                                                Number(booking.booking?.total_paid || 0),
+                                                0
+                                            ) > 0 && (
 
                                                 <button
                                                     type="button"

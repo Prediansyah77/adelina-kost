@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/adelina-kost-logo.png";
 
 import {
     Menu,
@@ -243,23 +244,11 @@ function PublicLayout({ children }) {
                         "
                     >
 
-                        <div
-                            className="
-                                flex
-                                h-10
-                                w-10
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-blue-600
-                                text-white
-                                shadow-sm
-                            "
-                        >
-
-                            <Home size={20} />
-
-                        </div>
+                        <img
+                            src={logo}
+                            alt="ADELINA KOST"
+                            className="h-16 w-auto object-contain"
+                        />
 
 
                         <div>
