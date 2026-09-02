@@ -37,19 +37,19 @@ import { getRoomById } from "../../services/roomService";
 //
 // User pilih kamar
 //      ↓
-// Pengajuan kamar
-//      ↓
 // Pilih "Pesan Kamar Tanpa DP"
 //      ↓
 // Halaman pembayaran penuh
 //      ↓
-// User transfer Rp750.000
+// User transfer sesuai harga kamar
 //      ↓
 // Upload bukti
 //      ↓
 // Submit
 //      ↓
 // Backend membuat booking + payment
+//      ↓
+// Menunggu verifikasi admin
 //
 // =====================================================
 
@@ -263,11 +263,11 @@ function TenantFullPayment() {
                 //
                 // GET /api/tenant-accounts/me
                 //
-                // JWT menentukan user yang sedang login.
+                // JWT menentukan tenant yang sedang login.
                 //
                 // Response:
                 //
-                // result.data.tenant
+                // tenantResult.data.tenant
                 //
                 // =================================================
 
@@ -312,9 +312,7 @@ function TenantFullPayment() {
 
 
                 // =================================================
-                // RESPONSE BACKEND:
-                //
-                // tenantResult.data.tenant
+                // AMBIL DATA TENANT
                 // =================================================
 
                 const tenant =
@@ -511,7 +509,7 @@ function TenantFullPayment() {
 
 
     // =====================================================
-    // SUBMIT PEMBAYARAN
+    // SUBMIT PEMBAYARAN PENUH
     // =====================================================
 
     const handleSubmit =
@@ -613,6 +611,13 @@ function TenantFullPayment() {
                 // =============================================
                 // PAYMENT TYPE
                 // =============================================
+                //
+                // Dipertahankan untuk informasi request.
+                //
+                // Backend full payment tetap menggunakan
+                // endpoint /api/payments/full.
+                //
+                // =============================================
 
                 formData.append(
                     "payment_type",
@@ -667,18 +672,31 @@ function TenantFullPayment() {
                         amount: totalPayment,
                         paymentMonth:
                             paymentMonth + 1,
-                        paymentYear
+                        paymentYear,
                     }
                 );
 
 
                 // =============================================
-                // REQUEST
+                // REQUEST FULL PAYMENT
+                // =============================================
+                //
+                // PENTING:
+                //
+                // Sebelumnya:
+                // /api/payments/booking
+                //
+                // Sekarang:
+                // /api/payments/full
+                //
+                // Karena full payment mempunyai controller
+                // createFullPayment sendiri.
+                //
                 // =============================================
 
                 const response =
                     await fetch(
-                        "http://localhost:5000/api/payments/booking",
+                        "http://localhost:5000/api/payments/full",
                         {
                             method: "POST",
 
@@ -948,6 +966,7 @@ function TenantFullPayment() {
                                 </div>
 
                             </div>
+
 
                             <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">
 

@@ -11,6 +11,51 @@ import {
 
 function Location() {
 
+    // =====================================================
+    // DATA LOKASI BANGUNAN
+    // =====================================================
+
+    const locations = [
+        {
+            id: 1,
+            name: "Bangunan 1",
+            type: "Bangunan Lama",
+
+            address: [
+                "Jalan Srikandi",
+                "Pekanbaru, Riau",
+            ],
+
+            description:
+                "Bangunan lama ADELINA KOST yang berada di kawasan Jalan Srikandi, Pekanbaru.",
+
+            mapUrl:
+                "https://maps.app.goo.gl/NnAr9RDaxM7DtVax8",
+        },
+
+        {
+            id: 2,
+            name: "Bangunan 2",
+            type: "Bangunan Baru",
+
+            address: [
+                "Alamat Bangunan 2",
+                "Pekanbaru, Riau",
+            ],
+
+            description:
+                "Bangunan baru ADELINA KOST dengan lokasi yang berbeda dari bangunan lama.",
+
+            mapUrl:
+                "https://maps.app.goo.gl/VaRxTtRq1PAJTAZ39",
+        },
+    ];
+
+
+    // =====================================================
+    // TEMPAT DI SEKITAR
+    // =====================================================
+
     const nearbyPlaces = [
         {
             icon: GraduationCap,
@@ -44,6 +89,7 @@ function Location() {
         },
     ];
 
+
     return (
         <div className="bg-slate-50">
 
@@ -61,6 +107,8 @@ function Location() {
 
                     <div className="max-w-3xl">
 
+                        {/* BADGE */}
+
                         <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600">
 
                             <MapPin size={17} />
@@ -69,22 +117,28 @@ function Location() {
 
                         </div>
 
+
+                        {/* TITLE */}
+
                         <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
 
-                            Tinggal di lokasi yang
+                            Dua lokasi,
 
                             <span className="block text-blue-600">
-                                strategis & nyaman.
+                                satu ADELINA KOST.
                             </span>
 
                         </h1>
 
+
+                        {/* DESCRIPTION */}
+
                         <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
 
-                            ADELINA KOST berada di Jalan Srikandi,
-                            Pekanbaru, dengan akses yang mudah menuju
-                            berbagai fasilitas pendidikan, perbelanjaan,
-                            dan kebutuhan sehari-hari.
+                            ADELINA KOST memiliki dua bangunan
+                            dengan lokasi yang berbeda di Pekanbaru.
+                            Pilih lokasi yang paling sesuai dengan
+                            kebutuhanmu.
 
                         </p>
 
@@ -96,126 +150,268 @@ function Location() {
 
 
             {/* =====================================================
-                LOCATION CARD
+                LOCATION CARDS
             ===================================================== */}
 
             <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
 
+                {/* SECTION HEADER */}
+
+                <div className="mb-10 max-w-2xl">
+
+                    <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+                        Pilihan lokasi
+                    </p>
+
+                    <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                        Temukan lokasi yang sesuai
+                    </h2>
+
+                    <p className="mt-3 text-sm leading-6 text-slate-500">
+
+                        Setiap bangunan memiliki lokasi tersendiri.
+                        Lihat alamat dan lokasi masing-masing bangunan
+                        sebelum memilih kamar.
+
+                    </p>
+
+                </div>
+
+
+                {/* =================================================
+                    LOCATION GRID
+                ================================================= */}
+
                 <div className="grid gap-8 lg:grid-cols-2">
 
-                    {/* =================================================
-                        ADDRESS
-                    ================================================= */}
-
-                    <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
-
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-
-                            <MapPin size={23} />
-
-                        </div>
-
-                        <p className="mt-6 text-sm font-semibold uppercase tracking-wider text-blue-600">
-                            Alamat
-                        </p>
-
-                        <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-
-                            ADELINA KOST
-
-                        </h2>
-
-                        <p className="mt-4 text-base leading-7 text-slate-600">
-
-                            Jalan Srikandi,
-                            <br />
-                            Pekanbaru, Riau
-
-                        </p>
-
-
-                        <div className="mt-7 flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-
-                            <Navigation
-                                size={20}
-                                className="mt-0.5 shrink-0 text-blue-600"
-                            />
-
-                            <div>
-
-                                <p className="text-sm font-semibold text-slate-800">
-                                    Lokasi strategis
-                                </p>
-
-                                <p className="mt-1 text-xs leading-5 text-slate-500">
-
-                                    Cocok untuk pekerja maupun mahasiswa
-                                    yang membutuhkan tempat tinggal
-                                    dengan akses mudah.
-
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* =================================================
-                        MAP PLACEHOLDER
-                    ================================================= */}
-
-                    <div className="relative min-h-[360px] overflow-hidden rounded-3xl border border-slate-200 bg-slate-200 shadow-sm">
-
-                        {/* Background map style */}
+                    {locations.map((location) => (
 
                         <div
-                            className="absolute inset-0 opacity-40"
-                            style={{
-                                backgroundImage:
-                                    "linear-gradient(rgba(100,116,139,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(100,116,139,0.18) 1px, transparent 1px)",
-                                backgroundSize: "45px 45px",
-                            }}
-                        />
+                            key={location.id}
+                            className="
+                                overflow-hidden
+                                rounded-3xl
+                                border
+                                border-slate-200
+                                bg-white
+                                shadow-sm
+                            "
+                        >
 
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100/80" />
+                            {/* =========================================
+                                LOCATION HEADER
+                            ========================================= */}
+
+                            <div className="p-7 sm:p-9">
+
+                                <div className="flex items-start justify-between gap-4">
+
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+
+                                        <Building2 size={23} />
+
+                                    </div>
 
 
-                        {/* Map roads */}
+                                    <span
+                                        className="
+                                            rounded-full
+                                            border
+                                            border-blue-100
+                                            bg-blue-50
+                                            px-3
+                                            py-1.5
+                                            text-xs
+                                            font-semibold
+                                            text-blue-600
+                                        "
+                                    >
+                                        {location.type}
+                                    </span>
 
-                        <div className="absolute left-0 top-1/2 h-8 w-full -rotate-6 bg-white/70" />
-
-                        <div className="absolute left-1/2 top-0 h-full w-7 rotate-12 bg-white/60" />
-
-                        <div className="absolute left-0 top-1/3 h-4 w-full rotate-12 bg-white/50" />
+                                </div>
 
 
-                        {/* Location marker */}
+                                {/* NAME */}
 
-                        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+                                <p className="mt-6 text-sm font-semibold uppercase tracking-wider text-blue-600">
+                                    Lokasi {location.id}
+                                </p>
 
-                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/30">
+                                <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
+                                    {location.name}
+                                </h2>
 
-                                <MapPin size={30} />
+
+                                {/* DESCRIPTION */}
+
+                                <p className="mt-4 text-sm leading-6 text-slate-600">
+                                    {location.description}
+                                </p>
+
+
+                                {/* ADDRESS */}
+
+                                <div className="mt-6 flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+
+                                    <MapPin
+                                        size={20}
+                                        className="mt-0.5 shrink-0 text-blue-600"
+                                    />
+
+                                    <div>
+
+                                        <p className="text-sm font-semibold text-slate-800">
+                                            Alamat
+                                        </p>
+
+                                        <p className="mt-1 text-sm leading-6 text-slate-500">
+
+                                            {location.address.map(
+                                                (line, index) => (
+                                                    <span key={index}>
+                                                        {line}
+
+                                                        {index <
+                                                            location.address.length -
+                                                            1 && (
+                                                                <br />
+                                                            )}
+                                                    </span>
+                                                )
+                                            )}
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* STRATEGIC LOCATION */}
+
+                                <div className="mt-4 flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+
+                                    <Navigation
+                                        size={20}
+                                        className="mt-0.5 shrink-0 text-blue-600"
+                                    />
+
+                                    <div>
+
+                                        <p className="text-sm font-semibold text-slate-800">
+                                            Lokasi strategis
+                                        </p>
+
+                                        <p className="mt-1 text-xs leading-5 text-slate-500">
+
+                                            Pilih bangunan berdasarkan
+                                            lokasi yang paling dekat
+                                            dengan aktivitas dan kebutuhanmu.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* GOOGLE MAP */}
+
+                                <a
+                                    href={location.mapUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="
+                                        mt-7
+                                        inline-flex
+                                        items-center
+                                        gap-2
+                                        rounded-xl
+                                        bg-blue-600
+                                        px-5
+                                        py-3
+                                        text-sm
+                                        font-semibold
+                                        text-white
+                                        shadow-sm
+                                        transition
+                                        hover:bg-blue-700
+                                        hover:shadow-md
+                                    "
+                                >
+
+                                    <MapPin size={17} />
+
+                                    Buka di Google Maps
+
+                                    <span className="text-base">
+                                        →
+                                    </span>
+
+                                </a>
 
                             </div>
 
-                            <div className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-2 text-center shadow-lg">
 
-                                <p className="text-sm font-bold text-slate-900">
-                                    ADELINA KOST
-                                </p>
+                            {/* =========================================
+                                MAP PLACEHOLDER
+                            ========================================= */}
 
-                                <p className="mt-0.5 text-xs text-slate-500">
-                                    Jalan Srikandi, Pekanbaru
-                                </p>
+                            <div className="relative h-64 overflow-hidden border-t border-slate-100 bg-slate-200">
+
+                                {/* MAP BACKGROUND */}
+
+                                <div
+                                    className="absolute inset-0 opacity-40"
+                                    style={{
+                                        backgroundImage:
+                                            "linear-gradient(rgba(100,116,139,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(100,116,139,0.18) 1px, transparent 1px)",
+                                        backgroundSize: "45px 45px",
+                                    }}
+                                />
+
+                                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100/80" />
+
+
+                                {/* MAP ROADS */}
+
+                                <div className="absolute left-0 top-1/2 h-8 w-full -rotate-6 bg-white/70" />
+
+                                <div className="absolute left-1/2 top-0 h-full w-7 rotate-12 bg-white/60" />
+
+                                <div className="absolute left-0 top-1/3 h-4 w-full rotate-12 bg-white/50" />
+
+
+                                {/* LOCATION MARKER */}
+
+                                <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/30">
+
+                                        <MapPin size={27} />
+
+                                    </div>
+
+                                    <div className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-2 text-center shadow-lg">
+
+                                        <p className="text-sm font-bold text-slate-900">
+                                            {location.name}
+                                        </p>
+
+                                        <p className="mt-0.5 text-xs text-slate-500">
+                                            {location.address[0]}
+                                        </p>
+
+                                    </div>
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
+                    ))}
 
                 </div>
 
@@ -233,7 +429,7 @@ function Location() {
                     <div className="mb-10 max-w-2xl">
 
                         <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
-                            Sekitar Kost
+                            Sekitar ADELINA KOST
                         </p>
 
                         <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
@@ -242,9 +438,8 @@ function Location() {
 
                         <p className="mt-3 text-sm leading-6 text-slate-500">
 
-                            Lokasi ADELINA KOST memudahkan penghuni
-                            untuk mengakses berbagai tempat penting
-                            di sekitar Pekanbaru.
+                            Beberapa fasilitas penting yang dapat
+                            dijangkau dari kawasan ADELINA KOST.
 
                         </p>
 
@@ -330,10 +525,10 @@ function Location() {
 
                                 <p className="mt-4 text-sm leading-6 text-slate-600">
 
-                                    Lokasi kost berada di kawasan yang
-                                    mudah dijangkau sehingga membantu
-                                    penghuni dalam melakukan aktivitas
-                                    sehari-hari.
+                                    ADELINA KOST memiliki dua bangunan
+                                    di lokasi yang berbeda. Pilih lokasi
+                                    yang paling sesuai dengan aktivitas
+                                    sehari-harimu.
 
                                 </p>
 
@@ -350,10 +545,11 @@ function Location() {
                                     />
 
                                     <span className="text-sm font-medium text-slate-700">
-                                        Lokasi Pekanbaru
+                                        Dua lokasi bangunan
                                     </span>
 
                                 </div>
+
 
                                 <div className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4">
 
@@ -363,10 +559,11 @@ function Location() {
                                     />
 
                                     <span className="text-sm font-medium text-slate-700">
-                                        Area strategis
+                                        Area Pekanbaru
                                     </span>
 
                                 </div>
+
 
                                 <div className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4">
 
@@ -380,6 +577,7 @@ function Location() {
                                     </span>
 
                                 </div>
+
 
                                 <div className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4">
 

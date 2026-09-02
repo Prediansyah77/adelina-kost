@@ -17,7 +17,7 @@ const BankLogo = ({ bankName }) => {
         bank.includes("sea bank")
     ) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-orange-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
@@ -80,25 +80,22 @@ const BankLogo = ({ bankName }) => {
 
     if (bank === "bca" || bank.includes("bca")) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-blue-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
                     aria-label="BCA"
                 >
-                    {/* Blue mountain */}
                     <path
                         d="M12 43 L31 24 L43 36 L57 16 L78 43 Z"
                         fill="#1683C6"
                     />
 
-                    {/* Red accent */}
                     <path
                         d="M48 35 L59 24 L70 35 L59 46 Z"
                         fill="#E53935"
                     />
 
-                    {/* BCA text */}
                     <text
                         x="50"
                         y="57"
@@ -124,7 +121,7 @@ const BankLogo = ({ bankName }) => {
         bank.includes("bank syariah indonesia")
     ) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-green-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-green-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
@@ -168,7 +165,7 @@ const BankLogo = ({ bankName }) => {
 
     if (bank.includes("mandiri")) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-blue-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
@@ -224,7 +221,7 @@ const BankLogo = ({ bankName }) => {
 
     if (bank === "bni" || bank.includes("bni")) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-orange-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
@@ -262,7 +259,7 @@ const BankLogo = ({ bankName }) => {
 
     if (bank === "bri" || bank.includes("bri")) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-blue-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
@@ -311,7 +308,7 @@ const BankLogo = ({ bankName }) => {
         bank.includes("niaga")
     ) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-red-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-red-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
@@ -363,7 +360,7 @@ const BankLogo = ({ bankName }) => {
 
     if (bank.includes("permata")) {
         return (
-            <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-red-100 bg-white">
+            <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-red-100 bg-white shadow-sm">
                 <svg
                     viewBox="0 0 100 70"
                     className="h-14 w-16"
@@ -408,7 +405,7 @@ const BankLogo = ({ bankName }) => {
         .toUpperCase();
 
     return (
-        <div className="flex h-16 w-20 items-center justify-center rounded-xl border border-gray-200 bg-gray-50">
+        <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 shadow-sm">
             <div className="text-center">
                 <div className="text-xl font-bold text-gray-500">
                     {initials || "BANK"}
@@ -430,7 +427,7 @@ const BankLogo = ({ bankName }) => {
 const BankAccounts = () => {
 
     // =====================================================
-    // STATE
+    // STATE REKENING
     // =====================================================
 
     const [accounts, setAccounts] = useState([]);
@@ -453,6 +450,27 @@ const BankAccounts = () => {
         is_active: true,
         notes: "",
     });
+
+
+    // =====================================================
+    // STATE MUTASI
+    // =====================================================
+
+    const [showMutationModal, setShowMutationModal] = useState(false);
+
+    const [selectedAccount, setSelectedAccount] = useState(null);
+
+    const [mutations, setMutations] = useState([]);
+
+    const [mutationSummary, setMutationSummary] = useState({
+        total_transactions: 0,
+        total_masuk: 0,
+        total_keluar: 0,
+    });
+
+    const [mutationLoading, setMutationLoading] = useState(false);
+
+    const [mutationError, setMutationError] = useState("");
 
 
     // =====================================================
@@ -936,6 +954,98 @@ const BankAccounts = () => {
 
 
     // =====================================================
+    // LIHAT MUTASI
+    // =====================================================
+
+    const handleViewMutations = async (account) => {
+
+        setSelectedAccount(account);
+
+        setMutations([]);
+
+        setMutationSummary({
+            total_transactions: 0,
+            total_masuk: 0,
+            total_keluar: 0,
+        });
+
+        setMutationError("");
+
+        setShowMutationModal(true);
+
+        try {
+
+            setMutationLoading(true);
+
+            const response =
+                await api.get(
+                    `/bank-accounts/${account.id}/mutations`
+                );
+
+            console.log(
+                "Bank Mutations Response:",
+                response.data
+            );
+
+            setMutations(
+                response.data?.data?.mutations || []
+            );
+
+            setMutationSummary(
+                response.data?.data?.summary || {
+                    total_transactions: 0,
+                    total_masuk: 0,
+                    total_keluar: 0,
+                }
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Get Bank Mutations Error:",
+                error
+            );
+
+            setMutationError(
+                error.response?.data?.message ||
+                "Gagal mengambil mutasi rekening"
+            );
+
+        } finally {
+
+            setMutationLoading(false);
+
+        }
+    };
+
+
+    // =====================================================
+    // CLOSE MUTATION MODAL
+    // =====================================================
+
+    const handleCloseMutationModal = () => {
+
+        if (mutationLoading) {
+            return;
+        }
+
+        setShowMutationModal(false);
+
+        setSelectedAccount(null);
+
+        setMutations([]);
+
+        setMutationSummary({
+            total_transactions: 0,
+            total_masuk: 0,
+            total_keluar: 0,
+        });
+
+        setMutationError("");
+    };
+
+
+    // =====================================================
     // FORMAT ACCOUNT TYPE
     // =====================================================
 
@@ -987,6 +1097,129 @@ const BankAccounts = () => {
 
 
     // =====================================================
+    // FORMAT TANGGAL
+    // =====================================================
+
+    const formatDate = (value) => {
+
+        if (!value) {
+            return "-";
+        }
+
+        const date =
+            new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return String(value);
+        }
+
+        return date.toLocaleDateString(
+            "id-ID",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }
+        );
+    };
+
+
+    // =====================================================
+    // FORMAT MUTATION TYPE
+    // =====================================================
+
+    const getMutationType = (mutation) => {
+
+        const type = String(
+            mutation.type ||
+            mutation.transaction_type ||
+            mutation.mutation_type ||
+            ""
+        ).toLowerCase();
+
+        if (
+            type.includes("masuk") ||
+            type.includes("income") ||
+            type.includes("credit") ||
+            type.includes("kredit")
+        ) {
+            return "masuk";
+        }
+
+        if (
+            type.includes("keluar") ||
+            type.includes("expense") ||
+            type.includes("debit") ||
+            type.includes("debet")
+        ) {
+            return "keluar";
+        }
+
+        return mutation.direction === "in"
+            ? "masuk"
+            : mutation.direction === "out"
+                ? "keluar"
+                : "";
+    };
+
+
+    // =====================================================
+    // GET MUTATION DESCRIPTION
+    // =====================================================
+
+    const getMutationDescription = (mutation) => {
+
+        return (
+            mutation.description ||
+                mutation.notes ||
+                mutation.category ||
+                mutation.reference ||
+                mutation.payment_id
+                ? (
+                    mutation.description ||
+                    mutation.notes ||
+                    mutation.category ||
+                    mutation.reference ||
+                    `Pembayaran #${mutation.payment_id}`
+                )
+                : "Transaksi"
+        );
+    };
+
+
+    // =====================================================
+    // GET MUTATION DATE
+    // =====================================================
+
+    const getMutationDate = (mutation) => {
+
+        return (
+            mutation.date ||
+            mutation.transaction_date ||
+            mutation.mutation_date ||
+            mutation.payment_date ||
+            mutation.expense_date ||
+            mutation.created_at
+        );
+    };
+
+
+    // =====================================================
+    // GET MUTATION AMOUNT
+    // =====================================================
+
+    const getMutationAmount = (mutation) => {
+
+        return Number(
+            mutation.amount ||
+            mutation.nominal ||
+            mutation.value ||
+            0
+        );
+    };
+
+
+    // =====================================================
     // RENDER
     // =====================================================
 
@@ -1015,7 +1248,7 @@ const BankAccounts = () => {
 
                 <button
                     onClick={handleAdd}
-                    className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+                    className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
                 >
                     + Tambah Rekening
                 </button>
@@ -1029,9 +1262,15 @@ const BankAccounts = () => {
 
             {success && (
 
-                <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-green-700">
+                <div className="mb-4 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
 
-                    {success}
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-100">
+                        ✓
+                    </span>
+
+                    <span>
+                        {success}
+                    </span>
 
                 </div>
 
@@ -1044,9 +1283,15 @@ const BankAccounts = () => {
 
             {error && !showModal && (
 
-                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+                <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
 
-                    {error}
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100">
+                        !
+                    </span>
+
+                    <span>
+                        {error}
+                    </span>
 
                 </div>
 
@@ -1059,9 +1304,13 @@ const BankAccounts = () => {
 
             {loading ? (
 
-                <div className="rounded-xl border bg-white p-8 text-center text-gray-500">
+                <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
 
-                    Memuat data rekening...
+                    <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+
+                    <p className="text-sm text-gray-500">
+                        Memuat data rekening...
+                    </p>
 
                 </div>
 
@@ -1071,19 +1320,24 @@ const BankAccounts = () => {
                    EMPTY STATE
                 ================================================= */
 
-                <div className="rounded-xl border bg-white p-8 text-center">
+                <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center shadow-sm">
 
-                    <h2 className="text-lg font-semibold text-gray-700">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-3xl">
+                        🏦
+                    </div>
+
+                    <h2 className="mt-4 text-lg font-semibold text-gray-800">
                         Belum ada rekening
                     </h2>
 
-                    <p className="mt-2 text-gray-500">
-                        Tambahkan rekening bank ADELINA KOST.
+                    <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
+                        Tambahkan rekening bank atau rekening keuangan
+                        yang digunakan untuk operasional ADELINA KOST.
                     </p>
 
                     <button
                         onClick={handleAdd}
-                        className="mt-5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        className="mt-6 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
                     >
                         + Tambah Rekening
                     </button>
@@ -1109,191 +1363,204 @@ const BankAccounts = () => {
 
                             <div
                                 key={account.id}
-                                className={`rounded-xl border bg-white p-5 shadow-sm transition hover:shadow-md ${!isActive
+                                className={`overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${!isActive
                                     ? "opacity-75"
                                     : ""
                                     }`}
                             >
 
                                 {/* =================================
-                                    CARD HEADER
+                                    CARD CONTENT
                                 ================================= */}
 
-                                <div className="flex items-start justify-between gap-3">
+                                <div className="p-5">
 
-                                    <div className="flex min-w-0 items-center gap-3">
+                                    <div className="flex items-start justify-between gap-3">
 
-                                        {/* =================================
-                                            BANK LOGO
-                                        ================================= */}
+                                        <div className="flex min-w-0 items-center gap-3">
 
-                                        <BankLogo
-                                            bankName={
-                                                account.bank_name
-                                            }
-                                        />
+                                            <BankLogo
+                                                bankName={
+                                                    account.bank_name
+                                                }
+                                            />
 
+                                            <div className="min-w-0">
 
-                                        {/* =================================
-                                            BANK INFO
-                                        ================================= */}
+                                                <h2 className="truncate text-lg font-bold text-gray-800">
+                                                    {account.bank_name}
+                                                </h2>
 
-                                        <div className="min-w-0">
+                                                <p className="mt-1 truncate text-sm text-gray-500">
+                                                    {account.account_name}
+                                                </p>
 
-                                            <h2 className="text-lg font-bold text-gray-800">
-                                                {account.bank_name}
-                                            </h2>
-
-                                            <p className="mt-1 truncate text-sm text-gray-500">
-                                                {account.account_name}
-                                            </p>
+                                            </div>
 
                                         </div>
+
+
+                                        {/* STATUS */}
+
+                                        <span
+                                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide ${isActive
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-700"
+                                                }`}
+                                        >
+                                            {isActive
+                                                ? "AKTIF"
+                                                : "NONAKTIF"}
+                                        </span>
 
                                     </div>
 
 
                                     {/* =================================
-                                        STATUS
+                                        ACCOUNT NUMBER
                                     ================================= */}
 
-                                    <span
-                                        className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${isActive
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-red-100 text-red-700"
-                                            }`}
-                                    >
-                                        {isActive
-                                            ? "AKTIF"
-                                            : "NONAKTIF"}
-                                    </span>
+                                    <div className="mt-6">
 
-                                </div>
-
-
-                                {/* =================================
-                                    NOMOR REKENING
-                                ================================= */}
-
-                                <div className="mt-5">
-
-                                    <p className="text-sm text-gray-500">
-                                        Nomor Rekening
-                                    </p>
-
-                                    <p className="mt-1 font-semibold tracking-wide text-gray-800">
-                                        {formatAccountNumber(
-                                            account.account_number
-                                        )}
-                                    </p>
-
-                                </div>
-
-
-                                {/* =================================
-                                    JENIS REKENING
-                                ================================= */}
-
-                                <div className="mt-4">
-
-                                    <p className="text-sm text-gray-500">
-                                        Jenis Rekening
-                                    </p>
-
-                                    <p className="mt-1 font-medium text-gray-800">
-                                        {formatAccountType(
-                                            account.account_type
-                                        )}
-                                    </p>
-
-                                </div>
-
-
-                                {/* =================================
-                                    SALDO
-                                ================================= */}
-
-                                <div className="mt-4 rounded-lg bg-green-50 p-3">
-
-                                    <p className="text-sm text-gray-500">
-                                        Saldo
-                                    </p>
-
-                                    <p className="mt-1 text-xl font-bold text-green-600">
-
-                                        {formatRupiah(
-                                            account.current_balance
-                                        )}
-
-                                    </p>
-
-                                </div>
-
-
-                                {/* =================================
-                                    CATATAN
-                                ================================= */}
-
-                                {account.notes && (
-
-                                    <div className="mt-4">
-
-                                        <p className="text-sm text-gray-500">
-                                            Catatan
+                                        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                                            Nomor Rekening
                                         </p>
 
-                                        <p className="mt-1 text-sm text-gray-700">
-                                            {account.notes}
+                                        <p className="mt-1.5 text-base font-semibold tracking-wider text-gray-800">
+                                            {formatAccountNumber(
+                                                account.account_number
+                                            )}
                                         </p>
 
                                     </div>
 
-                                )}
+
+                                    {/* =================================
+                                        ACCOUNT TYPE
+                                    ================================= */}
+
+                                    <div className="mt-4">
+
+                                        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                                            Jenis Rekening
+                                        </p>
+
+                                        <p className="mt-1.5 text-sm font-semibold text-gray-800">
+                                            {formatAccountType(
+                                                account.account_type
+                                            )}
+                                        </p>
+
+                                    </div>
+
+
+                                    {/* =================================
+                                        BALANCE
+                                    ================================= */}
+
+                                    <div className="mt-5 rounded-xl border border-green-100 bg-green-50 p-4">
+
+                                        <p className="text-xs font-medium uppercase tracking-wide text-green-700/70">
+                                            Saldo Saat Ini
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-bold text-green-700">
+                                            {formatRupiah(
+                                                account.current_balance
+                                            )}
+                                        </p>
+
+                                    </div>
+
+
+                                    {/* =================================
+                                        NOTES
+                                    ================================= */}
+
+                                    {account.notes && (
+
+                                        <div className="mt-4 rounded-lg bg-gray-50 p-3">
+
+                                            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                                                Catatan
+                                            </p>
+
+                                            <p className="mt-1 text-sm leading-relaxed text-gray-600">
+                                                {account.notes}
+                                            </p>
+
+                                        </div>
+
+                                    )}
+
+                                </div>
 
 
                                 {/* =================================
                                     ACTION
                                 ================================= */}
 
-                                <div className="mt-5 flex gap-2">
+                                <div className="border-t border-gray-100 bg-gray-50/70 p-4">
+
+                                    {/* MUTASI */}
 
                                     <button
                                         onClick={() =>
-                                            handleEdit(account)
+                                            handleViewMutations(
+                                                account
+                                            )
                                         }
-                                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                                        className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
                                     >
-                                        Edit
+                                        <span>
+                                            ↗
+                                        </span>
+
+                                        Lihat Mutasi
                                     </button>
 
 
-                                    {isActive ? (
+                                    <div className="flex gap-2">
 
                                         <button
                                             onClick={() =>
-                                                handleDeactivate(
-                                                    account
-                                                )
+                                                handleEdit(account)
                                             }
-                                            className="flex-1 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                                            className="flex-1 rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50"
                                         >
-                                            Nonaktifkan
+                                            Edit
                                         </button>
 
-                                    ) : (
 
-                                        <button
-                                            onClick={() =>
-                                                handleActivate(
-                                                    account
-                                                )
-                                            }
-                                            className="flex-1 rounded-lg border border-green-200 px-3 py-2 text-sm font-medium text-green-600 transition hover:bg-green-50"
-                                        >
-                                            Aktifkan
-                                        </button>
+                                        {isActive ? (
 
-                                    )}
+                                            <button
+                                                onClick={() =>
+                                                    handleDeactivate(
+                                                        account
+                                                    )
+                                                }
+                                                className="flex-1 rounded-xl border border-red-200 bg-white px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                                            >
+                                                Nonaktifkan
+                                            </button>
+
+                                        ) : (
+
+                                            <button
+                                                onClick={() =>
+                                                    handleActivate(
+                                                        account
+                                                    )
+                                                }
+                                                className="flex-1 rounded-xl border border-green-200 bg-white px-3 py-2.5 text-sm font-semibold text-green-600 transition hover:bg-green-50"
+                                            >
+                                                Aktifkan
+                                            </button>
+
+                                        )}
+
+                                    </div>
 
                                 </div>
 
@@ -1308,310 +1575,828 @@ const BankAccounts = () => {
             )}
 
 
-            {/* =================================================
-                MODAL
-            ================================================= */}
+            {/* =====================================================
+                MODAL TAMBAH / EDIT REKENING
+            ===================================================== */}
 
             {showModal && (
 
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-3 backdrop-blur-[2px] sm:p-5">
 
-                    <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white shadow-xl">
+                    <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
 
-                        {/* =========================================
-                            MODAL HEADER
-                        ========================================= */}
+                        {/* MODAL HEADER */}
 
-                        <div className="flex items-center justify-between border-b px-6 py-4">
+                        <div className="shrink-0 border-b border-gray-100 bg-white px-5 py-4 sm:px-6">
 
-                            <div>
+                            <div className="flex items-start justify-between gap-4">
 
-                                <h2 className="text-lg font-bold text-gray-800">
+                                <div className="flex items-center gap-3">
 
-                                    {editingAccount
-                                        ? "Edit Rekening"
-                                        : "Tambah Rekening"}
-
-                                </h2>
-
-                                <p className="text-sm text-gray-500">
-                                    Data rekening ADELINA KOST
-                                </p>
-
-                            </div>
-
-
-                            <button
-                                onClick={handleCloseModal}
-                                disabled={saving}
-                                className="text-2xl text-gray-400 transition hover:text-gray-700 disabled:cursor-not-allowed"
-                            >
-                                ×
-                            </button>
-
-                        </div>
-
-
-                        {/* =========================================
-                            FORM
-                        ========================================= */}
-
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-4 p-6"
-                        >
-
-                            {/* =====================================
-                                NAMA BANK
-                            ===================================== */}
-
-                            <div>
-
-                                <label className="mb-1 block text-sm font-medium text-gray-700">
-                                    Nama Bank
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="bank_name"
-                                    value={form.bank_name}
-                                    onChange={handleChange}
-                                    placeholder="Contoh: BCA"
-                                    required
-                                    disabled={saving}
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-                                />
-
-                                <p className="mt-1 text-xs text-gray-400">
-                                    Logo akan otomatis mengikuti nama bank.
-                                </p>
-
-                            </div>
-
-
-                            {/* =====================================
-                                NAMA PEMILIK
-                            ===================================== */}
-
-                            <div>
-
-                                <label className="mb-1 block text-sm font-medium text-gray-700">
-                                    Nama Pemilik Rekening
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="account_name"
-                                    value={form.account_name}
-                                    onChange={handleChange}
-                                    placeholder="Contoh: Adelina Kost"
-                                    required
-                                    disabled={saving}
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-                                />
-
-                            </div>
-
-
-                            {/* =====================================
-                                NOMOR REKENING
-                            ===================================== */}
-
-                            <div>
-
-                                <label className="mb-1 block text-sm font-medium text-gray-700">
-                                    Nomor Rekening
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="account_number"
-                                    value={form.account_number}
-                                    onChange={handleChange}
-                                    placeholder="Masukkan nomor rekening"
-                                    required
-                                    disabled={saving}
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-                                />
-
-                            </div>
-
-
-                            {/* =====================================
-                                JENIS REKENING
-                            ===================================== */}
-
-                            <div>
-
-                                <label className="mb-1 block text-sm font-medium text-gray-700">
-                                    Jenis Rekening
-                                </label>
-
-                                <select
-                                    name="account_type"
-                                    value={form.account_type}
-                                    onChange={handleChange}
-                                    disabled={saving}
-                                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-                                >
-
-                                    <option value="bank">
-                                        Bank
-                                    </option>
-
-                                    <option value="cash">
-                                        Kas
-                                    </option>
-
-                                    <option value="e_wallet">
-                                        E-Wallet
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            {/* =====================================
-                                SALDO
-                            ===================================== */}
-
-                            <div>
-
-                                <label className="mb-1 block text-sm font-medium text-gray-700">
-                                    Saldo
-                                </label>
-
-                                <div className="relative">
-
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                                        Rp
-                                    </span>
-
-                                    <input
-                                        type="number"
-                                        name="current_balance"
-                                        value={form.current_balance}
-                                        onChange={handleChange}
-                                        min="0"
-                                        step="1"
-                                        placeholder="0"
-                                        disabled={saving}
-                                        className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-                                    />
-
-                                </div>
-
-                                <p className="mt-1 text-xs text-gray-500">
-                                    Masukkan saldo rekening saat ini.
-                                </p>
-
-                            </div>
-
-
-                            {/* =====================================
-                                STATUS
-                            ===================================== */}
-
-                            <div className="rounded-lg bg-gray-50 p-3">
-
-                                <label className="flex cursor-pointer items-center gap-3">
-
-                                    <input
-                                        type="checkbox"
-                                        name="is_active"
-                                        checked={form.is_active}
-                                        onChange={handleChange}
-                                        disabled={saving}
-                                        className="h-4 w-4"
-                                    />
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl">
+                                        🏦
+                                    </div>
 
                                     <div>
 
-                                        <p className="text-sm font-medium text-gray-700">
-                                            Rekening aktif
-                                        </p>
+                                        <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
+                                            {editingAccount
+                                                ? "Edit Rekening"
+                                                : "Tambah Rekening"}
+                                        </h2>
 
-                                        <p className="text-xs text-gray-500">
-                                            Rekening aktif dapat digunakan untuk transaksi.
+                                        <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
+                                            Kelola informasi rekening
+                                            keuangan ADELINA KOST
                                         </p>
 
                                     </div>
 
-                                </label>
-
-                            </div>
-
-
-                            {/* =====================================
-                                CATATAN
-                            ===================================== */}
-
-                            <div>
-
-                                <label className="mb-1 block text-sm font-medium text-gray-700">
-                                    Catatan
-                                </label>
-
-                                <textarea
-                                    name="notes"
-                                    value={form.notes}
-                                    onChange={handleChange}
-                                    placeholder="Catatan tambahan (opsional)"
-                                    rows="3"
-                                    disabled={saving}
-                                    className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-                                />
-
-                            </div>
-
-
-                            {/* =====================================
-                                ERROR MODAL
-                            ===================================== */}
-
-                            {error && (
-
-                                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                                    {error}
                                 </div>
 
-                            )}
-
-
-                            {/* =====================================
-                                BUTTON
-                            ===================================== */}
-
-                            <div className="flex justify-end gap-3 pt-3">
 
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
                                     disabled={saving}
-                                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    aria-label="Tutup"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    Batal
-                                </button>
-
-
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-
-                                    {saving
-                                        ? "Menyimpan..."
-                                        : editingAccount
-                                            ? "Simpan Perubahan"
-                                            : "Tambah Rekening"}
-
+                                    ×
                                 </button>
 
                             </div>
 
+                        </div>
+
+
+                        {/* FORM */}
+
+                        <form
+                            onSubmit={handleSubmit}
+                            className="flex min-h-0 flex-1 flex-col"
+                        >
+
+                            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+
+                                <div className="space-y-5">
+
+                                    {/* INFORMASI REKENING */}
+
+                                    <div>
+
+                                        <div className="mb-4">
+
+                                            <h3 className="text-sm font-bold text-gray-900">
+                                                Informasi Rekening
+                                            </h3>
+
+                                            <p className="mt-0.5 text-xs text-gray-500">
+                                                Masukkan informasi utama
+                                                rekening.
+                                            </p>
+
+                                        </div>
+
+
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                                            {/* NAMA BANK */}
+
+                                            <div className="sm:col-span-2">
+
+                                                <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                                                    Nama Bank
+                                                    <span className="ml-1 text-red-500">
+                                                        *
+                                                    </span>
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="bank_name"
+                                                    value={form.bank_name}
+                                                    onChange={handleChange}
+                                                    placeholder="Contoh: BCA"
+                                                    required
+                                                    disabled={saving}
+                                                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                                />
+
+                                                <p className="mt-1.5 text-xs text-gray-400">
+                                                    Logo akan otomatis
+                                                    mengikuti nama bank.
+                                                </p>
+
+                                            </div>
+
+
+                                            {/* NAMA PEMILIK */}
+
+                                            <div>
+
+                                                <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                                                    Nama Pemilik
+                                                    <span className="ml-1 text-red-500">
+                                                        *
+                                                    </span>
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="account_name"
+                                                    value={form.account_name}
+                                                    onChange={handleChange}
+                                                    placeholder="Adelina Kost"
+                                                    required
+                                                    disabled={saving}
+                                                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                                />
+
+                                            </div>
+
+
+                                            {/* NOMOR REKENING */}
+
+                                            <div>
+
+                                                <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                                                    Nomor Rekening
+                                                    <span className="ml-1 text-red-500">
+                                                        *
+                                                    </span>
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="account_number"
+                                                    value={form.account_number}
+                                                    onChange={handleChange}
+                                                    placeholder="Masukkan nomor rekening"
+                                                    required
+                                                    disabled={saving}
+                                                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm tracking-wide text-gray-800 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                                />
+
+                                            </div>
+
+
+                                            {/* JENIS REKENING */}
+
+                                            <div>
+
+                                                <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                                                    Jenis Rekening
+                                                </label>
+
+                                                <select
+                                                    name="account_type"
+                                                    value={form.account_type}
+                                                    onChange={handleChange}
+                                                    disabled={saving}
+                                                    className="w-full cursor-pointer rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-800 outline-none transition hover:border-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                                >
+
+                                                    <option value="bank">
+                                                        Bank
+                                                    </option>
+
+                                                    <option value="cash">
+                                                        Kas
+                                                    </option>
+
+                                                    <option value="e_wallet">
+                                                        E-Wallet
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+
+                                            {/* SALDO */}
+
+                                            <div>
+
+                                                <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                                                    Saldo Saat Ini
+                                                </label>
+
+                                                <div className="relative">
+
+                                                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500">
+                                                        Rp
+                                                    </span>
+
+                                                    <input
+                                                        type="number"
+                                                        name="current_balance"
+                                                        value={form.current_balance}
+                                                        onChange={handleChange}
+                                                        min="0"
+                                                        step="1"
+                                                        placeholder="0"
+                                                        disabled={saving}
+                                                        className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-3.5 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                                    />
+
+                                                </div>
+
+                                                <p className="mt-1.5 text-xs text-gray-400">
+                                                    Saldo awal rekening saat
+                                                    ini.
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {/* STATUS */}
+
+                                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+
+                                        <label className="flex cursor-pointer items-start gap-3">
+
+                                            <input
+                                                type="checkbox"
+                                                name="is_active"
+                                                checked={form.is_active}
+                                                onChange={handleChange}
+                                                disabled={saving}
+                                                className="mt-0.5 h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            />
+
+                                            <div>
+
+                                                <p className="text-sm font-semibold text-gray-800">
+                                                    Rekening aktif
+                                                </p>
+
+                                                <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
+                                                    Rekening aktif dapat
+                                                    digunakan untuk transaksi
+                                                    pembayaran dan pengeluaran.
+                                                </p>
+
+                                            </div>
+
+                                        </label>
+
+                                    </div>
+
+
+                                    {/* CATATAN */}
+
+                                    <div>
+
+                                        <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                                            Catatan
+                                        </label>
+
+                                        <textarea
+                                            name="notes"
+                                            value={form.notes}
+                                            onChange={handleChange}
+                                            placeholder="Catatan tambahan (opsional)"
+                                            rows="3"
+                                            disabled={saving}
+                                            className="w-full resize-none rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm leading-relaxed text-gray-800 outline-none transition placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                        />
+
+                                    </div>
+
+
+                                    {/* ERROR */}
+
+                                    {error && (
+
+                                        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm text-red-700">
+
+                                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 font-bold">
+                                                !
+                                            </div>
+
+                                            <p className="leading-relaxed">
+                                                {error}
+                                            </p>
+
+                                        </div>
+
+                                    )}
+
+                                </div>
+
+                            </div>
+
+
+                            {/* FOOTER */}
+
+                            <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-4 sm:px-6">
+
+                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseModal}
+                                        disabled={saving}
+                                        className="w-full rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                                    >
+                                        Batal
+                                    </button>
+
+
+                                    <button
+                                        type="submit"
+                                        disabled={saving}
+                                        className="w-full rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                                    >
+
+                                        {saving
+                                            ? "Menyimpan..."
+                                            : editingAccount
+                                                ? "Simpan Perubahan"
+                                                : "Tambah Rekening"}
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
                         </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* =====================================================
+                MODAL MUTASI REKENING
+            ===================================================== */}
+
+            {showMutationModal && (
+
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-[2px] sm:p-5">
+
+                    <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+                        {/* =========================================
+                            MUTATION HEADER
+                        ========================================= */}
+
+                        <div className="shrink-0 border-b border-gray-100 bg-white px-5 py-4 sm:px-6">
+
+                            <div className="flex items-start justify-between gap-4">
+
+                                <div className="flex items-center gap-3">
+
+                                    {selectedAccount && (
+                                        <BankLogo
+                                            bankName={
+                                                selectedAccount.bank_name
+                                            }
+                                        />
+                                    )}
+
+                                    <div>
+
+                                        <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
+                                            Mutasi Rekening
+                                        </h2>
+
+                                        {selectedAccount && (
+
+                                            <p className="mt-1 text-sm text-gray-500">
+
+                                                {selectedAccount.bank_name}
+                                                {" • "}
+                                                {formatAccountNumber(
+                                                    selectedAccount.account_number
+                                                )}
+
+                                            </p>
+
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleCloseMutationModal
+                                    }
+                                    disabled={mutationLoading}
+                                    aria-label="Tutup"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =========================================
+                            MUTATION CONTENT
+                        ========================================= */}
+
+                        <div className="min-h-0 flex-1 overflow-y-auto bg-gray-50/60 px-5 py-5 sm:px-6">
+
+                            {/* ERROR */}
+
+                            {mutationError && (
+
+                                <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+
+                                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 font-bold">
+                                        !
+                                    </div>
+
+                                    <p>
+                                        {mutationError}
+                                    </p>
+
+                                </div>
+
+                            )}
+
+
+                            {/* SUMMARY */}
+
+                            {!mutationError && (
+
+                                <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+
+                                    {/* TOTAL TRANSAKSI */}
+
+                                    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                            Total Transaksi
+                                        </p>
+
+                                        <p className="mt-2 text-2xl font-bold text-gray-800">
+                                            {Number(
+                                                mutationSummary.total_transactions ||
+                                                0
+                                            ).toLocaleString(
+                                                "id-ID"
+                                            )}
+                                        </p>
+
+                                    </div>
+
+
+                                    {/* TOTAL MASUK */}
+
+                                    <div className="rounded-2xl border border-green-100 bg-green-50 p-4 shadow-sm">
+
+                                        <div className="flex items-center justify-between">
+
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-green-700/70">
+                                                Total Masuk
+                                            </p>
+
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-700">
+                                                ↓
+                                            </span>
+
+                                        </div>
+
+                                        <p className="mt-2 text-xl font-bold text-green-700">
+                                            {formatRupiah(
+                                                mutationSummary.total_masuk
+                                            )}
+                                        </p>
+
+                                    </div>
+
+
+                                    {/* TOTAL KELUAR */}
+
+                                    <div className="rounded-2xl border border-red-100 bg-red-50 p-4 shadow-sm">
+
+                                        <div className="flex items-center justify-between">
+
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-red-700/70">
+                                                Total Keluar
+                                            </p>
+
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-700">
+                                                ↑
+                                            </span>
+
+                                        </div>
+
+                                        <p className="mt-2 text-xl font-bold text-red-700">
+                                            {formatRupiah(
+                                                mutationSummary.total_keluar
+                                            )}
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            )}
+
+
+                            {/* LOADING */}
+
+                            {mutationLoading ? (
+
+                                <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
+
+                                    <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+
+                                    <p className="text-sm font-medium text-gray-600">
+                                        Memuat mutasi rekening...
+                                    </p>
+
+                                </div>
+
+                            ) : mutationError ? (
+
+                                <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
+
+                                    <p className="text-sm text-gray-500">
+                                        Data mutasi tidak dapat dimuat.
+                                    </p>
+
+                                </div>
+
+                            ) : mutations.length === 0 ? (
+
+                                /* =====================================
+                                    EMPTY MUTATION
+                                ===================================== */
+
+                                <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center shadow-sm">
+
+                                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-3xl">
+                                        📄
+                                    </div>
+
+                                    <h3 className="mt-4 text-lg font-bold text-gray-800">
+                                        Belum Ada Mutasi
+                                    </h3>
+
+                                    <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
+                                        Belum ada transaksi masuk atau keluar
+                                        yang tercatat pada rekening ini.
+                                    </p>
+
+                                </div>
+
+                            ) : (
+
+                                /* =====================================
+                                    MUTATION TABLE
+                                ===================================== */
+
+                                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+
+                                    <div className="border-b border-gray-100 px-5 py-4">
+
+                                        <h3 className="text-sm font-bold text-gray-900">
+                                            Riwayat Transaksi
+                                        </h3>
+
+                                        <p className="mt-0.5 text-xs text-gray-500">
+                                            Daftar transaksi rekening
+                                            ADELINA KOST.
+                                        </p>
+
+                                    </div>
+
+
+                                    <div className="overflow-x-auto">
+
+                                        <table className="min-w-full">
+
+                                            <thead className="bg-gray-50">
+
+                                                <tr>
+
+                                                    <th className="whitespace-nowrap px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                                        Tanggal
+                                                    </th>
+
+                                                    <th className="whitespace-nowrap px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                                        Keterangan
+                                                    </th>
+
+                                                    <th className="whitespace-nowrap px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                                        Jenis
+                                                    </th>
+
+                                                    <th className="whitespace-nowrap px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                                        Nominal
+                                                    </th>
+
+                                                </tr>
+
+                                            </thead>
+
+
+                                            <tbody className="divide-y divide-gray-100">
+
+                                                {mutations.map(
+                                                    (mutation, index) => {
+
+                                                        const type =
+                                                            getMutationType(
+                                                                mutation
+                                                            );
+
+                                                        const amount =
+                                                            getMutationAmount(
+                                                                mutation
+                                                            );
+
+                                                        return (
+
+                                                            <tr
+                                                                key={
+                                                                    mutation.id ||
+                                                                    mutation.payment_id ||
+                                                                    mutation.expense_id ||
+                                                                    index
+                                                                }
+                                                                className="transition hover:bg-gray-50"
+                                                            >
+
+                                                                {/* TANGGAL */}
+
+                                                                <td className="whitespace-nowrap px-5 py-4 text-sm text-gray-600">
+
+                                                                    {formatDate(
+                                                                        getMutationDate(
+                                                                            mutation
+                                                                        )
+                                                                    )}
+
+                                                                </td>
+
+
+                                                                {/* KETERANGAN */}
+
+                                                                <td className="px-5 py-4">
+
+                                                                    <div className="max-w-sm">
+
+                                                                        <p className="text-sm font-semibold text-gray-800">
+                                                                            {getMutationDescription(
+                                                                                mutation
+                                                                            )}
+                                                                        </p>
+
+                                                                        {mutation.reference && (
+
+                                                                            <p className="mt-1 text-xs text-gray-400">
+                                                                                Ref:{" "}
+                                                                                {
+                                                                                    mutation.reference
+                                                                                }
+                                                                            </p>
+
+                                                                        )}
+
+                                                                    </div>
+
+                                                                </td>
+
+
+                                                                {/* JENIS */}
+
+                                                                <td className="whitespace-nowrap px-5 py-4">
+
+                                                                    {type ===
+                                                                        "masuk" ? (
+
+                                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700">
+                                                                            ↓
+                                                                            Masuk
+                                                                        </span>
+
+                                                                    ) : type ===
+                                                                        "keluar" ? (
+
+                                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700">
+                                                                            ↑
+                                                                            Keluar
+                                                                        </span>
+
+                                                                    ) : (
+
+                                                                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-600">
+                                                                            Transaksi
+                                                                        </span>
+
+                                                                    )}
+
+                                                                </td>
+
+
+                                                                {/* NOMINAL */}
+
+                                                                <td className="whitespace-nowrap px-5 py-4 text-right">
+
+                                                                    <p
+                                                                        className={`text-sm font-bold ${type ===
+                                                                            "masuk"
+                                                                            ? "text-green-700"
+                                                                            : type ===
+                                                                                "keluar"
+                                                                                ? "text-red-700"
+                                                                                : "text-gray-800"
+                                                                            }`}
+                                                                    >
+
+                                                                        {type ===
+                                                                            "masuk"
+                                                                            ? "+"
+                                                                            : type ===
+                                                                                "keluar"
+                                                                                ? "-"
+                                                                                : ""}
+
+                                                                        {formatRupiah(
+                                                                            amount
+                                                                        )}
+
+                                                                    </p>
+
+                                                                </td>
+
+                                                            </tr>
+
+                                                        );
+
+                                                    }
+                                                )}
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+
+                        {/* =========================================
+                            MUTATION FOOTER
+                        ========================================= */}
+
+                        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-4 sm:px-6">
+
+                            <div className="flex items-center justify-between gap-4">
+
+                                <div className="text-xs text-gray-400">
+
+                                    Saldo saat ini:{" "}
+
+                                    <span className="font-bold text-gray-700">
+
+                                        {selectedAccount
+                                            ? formatRupiah(
+                                                selectedAccount.current_balance
+                                            )
+                                            : "Rp 0"}
+
+                                    </span>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleCloseMutationModal
+                                    }
+                                    disabled={mutationLoading}
+                                    className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Tutup
+                                </button>
+
+                            </div>
+
+                        </div>
 
                     </div>
 

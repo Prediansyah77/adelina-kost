@@ -3,6 +3,7 @@ import {
     BedDouble,
     CheckCircle2,
     MapPin,
+    Navigation as NavigationIcon,
     ShieldCheck,
     Sparkles,
     Wifi,
@@ -10,22 +11,29 @@ import {
     CookingPot,
     Shirt,
     Car,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
-import { getPublicRooms } from '../../services/roomService'
+import { getPublicRooms } from "../../services/roomService";
 
 
 // =====================================================
 // GOOGLE MAPS ADELINA KOST
 // =====================================================
 
-const GOOGLE_MAPS_URL =
-    'https://maps.app.goo.gl/VaRxTtRq1PAJTAZ39'
+const GOOGLE_MAPS_BANGUNAN_LAMA =
+    "https://maps.app.goo.gl/NnAr9RDaxM7DtVax8";
 
+const GOOGLE_MAPS_BANGUNAN_BARU =
+    "https://maps.app.goo.gl/VaRxTtRq1PAJTAZ39";
+
+
+// =====================================================
+// LANDING PAGE
+// =====================================================
 
 function LandingPage() {
 
@@ -33,8 +41,7 @@ function LandingPage() {
     // STATE JUMLAH KAMAR TERSEDIA
     // =====================================================
 
-    const [availableRooms, setAvailableRooms] =
-        useState(0)
+    const [availableRooms, setAvailableRooms] = useState(0);
 
 
     // =====================================================
@@ -47,69 +54,42 @@ function LandingPage() {
 
             try {
 
-                const response =
-                    await getPublicRooms()
-
-
-                /*
-                 * Bisa menerima:
-                 *
-                 * 1. Array langsung
-                 *
-                 * 2. Object:
-                 * {
-                 *     success: true,
-                 *     data: []
-                 * }
-                 */
+                const response = await getPublicRooms();
 
                 const roomData =
                     Array.isArray(response)
                         ? response
                         : Array.isArray(response?.data)
                             ? response.data
-                            : []
+                            : [];
 
-
-                // =================================================
-                // HITUNG KAMAR AVAILABLE
-                // =================================================
 
                 const totalAvailable =
                     roomData.filter(
                         (room) =>
                             room.status === "available"
-                    ).length
+                    ).length;
 
 
-                setAvailableRooms(
-                    totalAvailable
-                )
-
+                setAvailableRooms(totalAvailable);
 
             } catch (error) {
 
                 console.error(
                     "Landing Page Rooms Error:",
                     error
-                )
+                );
 
-
-                // =================================================
-                // JIKA GAGAL:
-                // TETAP TAMPILKAN LANDING PAGE
-                // =================================================
-
-                setAvailableRooms(0)
+                setAvailableRooms(0);
 
             }
 
-        }
+        };
 
 
-        loadAvailableRooms()
+        loadAvailableRooms();
 
-    }, [])
+    }, []);
 
 
     return (
@@ -149,9 +129,7 @@ function LandingPage() {
 
                     <div>
 
-                        {/* =================================================
-                            BADGE
-                        ================================================= */}
+                        {/* BADGE */}
 
                         <div
                             className="
@@ -178,9 +156,7 @@ function LandingPage() {
                         </div>
 
 
-                        {/* =================================================
-                            TITLE
-                        ================================================= */}
+                        {/* TITLE */}
 
                         <h1
                             className="
@@ -204,9 +180,7 @@ function LandingPage() {
                         </h1>
 
 
-                        {/* =================================================
-                            DESCRIPTION
-                        ================================================= */}
+                        {/* DESCRIPTION */}
 
                         <p
                             className="
@@ -227,105 +201,45 @@ function LandingPage() {
 
 
                         {/* =================================================
-                            HARGA + KAMAR TERSEDIA
+                            KAMAR TERSEDIA
                         ================================================= */}
 
-                        <div
-                            className="
-                                mt-5
-                                flex
-                                flex-wrap
-                                items-start
-                                gap-6
-                            "
-                        >
+                        <div className="mt-5">
 
-                            {/* =================================================
-                                HARGA MULAI
-                            ================================================= */}
+                            <p
+                                className="
+                                    text-sm
+                                    font-medium
+                                    text-slate-500
+                                "
+                            >
+                                Kamar tersedia
+                            </p>
 
-                            <div>
 
-                                <p
+                            <p
+                                className="
+                                    mt-1
+                                    text-2xl
+                                    font-bold
+                                    text-emerald-600
+                                "
+                            >
+
+                                {availableRooms}
+
+                                <span
                                     className="
+                                        ml-1
                                         text-sm
                                         font-medium
                                         text-slate-500
                                     "
                                 >
+                                    kamar
+                                </span>
 
-                                </p>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-2xl
-                                        font-bold
-                                        text-slate-900
-                                    "
-                                >
-
-
-
-                                    <span
-                                        className="
-                                            ml-1
-                                            text-sm
-                                            font-medium
-                                            text-slate-500
-                                        "
-                                    >
-
-                                    </span>
-
-                                </p>
-
-                            </div>
-
-
-                            {/* =================================================
-                                KAMAR TERSEDIA
-                            ================================================= */}
-
-                            <div>
-
-                                <p
-                                    className="
-                                        text-sm
-                                        font-medium
-                                        text-slate-500
-                                    "
-                                >
-                                    Kamar tersedia
-                                </p>
-
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-2xl
-                                        font-bold
-                                        text-emerald-600
-                                    "
-                                >
-
-                                    {availableRooms}
-
-                                    <span
-                                        className="
-                                            ml-1
-                                            text-sm
-                                            font-medium
-                                            text-slate-500
-                                        "
-                                    >
-                                        kamar
-                                    </span>
-
-                                </p>
-
-                            </div>
+                            </p>
 
                         </div>
 
@@ -343,10 +257,6 @@ function LandingPage() {
                                 sm:flex-row
                             "
                         >
-
-                            {/* =================================================
-                                LIHAT KAMAR
-                            ================================================= */}
 
                             <Link
                                 to="/kamar"
@@ -375,12 +285,8 @@ function LandingPage() {
                             </Link>
 
 
-                            {/* =================================================
-                                LIHAT LOKASI
-                            ================================================= */}
-
                             <a
-                                href={GOOGLE_MAPS_URL}
+                                href={GOOGLE_MAPS_BANGUNAN_LAMA}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="
@@ -430,36 +336,29 @@ function LandingPage() {
                                 Spring Bed
                             </FeatureItem>
 
-
                             <FeatureItem>
                                 WiFi
                             </FeatureItem>
-
 
                             <FeatureItem>
                                 Kamar mandi dalam
                             </FeatureItem>
 
-
                             <FeatureItem>
                                 Kipas Angin
                             </FeatureItem>
-
 
                             <FeatureItem>
                                 Lemari
                             </FeatureItem>
 
-
                             <FeatureItem>
                                 Dapur Umum
                             </FeatureItem>
 
-
                             <FeatureItem>
                                 Area Jemuran
                             </FeatureItem>
-
 
                             <FeatureItem>
                                 Area Parkir
@@ -671,6 +570,18 @@ function LandingPage() {
 
                                 <p
                                     className="
+                                        mt-1
+                                        text-sm
+                                        font-medium
+                                        text-blue-600
+                                    "
+                                >
+                                    ADELINA KOST 1
+                                </p>
+
+
+                                <p
+                                    className="
                                         mt-2
                                         text-sm
                                         leading-6
@@ -678,8 +589,8 @@ function LandingPage() {
                                     "
                                 >
 
-                                    Pilihan kamar dari bangunan pertama
-                                    ADELINA KOST.
+                                    Pilihan kamar dari ADELINA KOST 1
+
 
                                 </p>
 
@@ -687,7 +598,7 @@ function LandingPage() {
 
 
                             <Link
-                                to="/kamar"
+                                to="/kamar?buildingId=1"
                                 className="
                                     mt-6
                                     inline-flex
@@ -767,6 +678,18 @@ function LandingPage() {
 
                                 <p
                                     className="
+                                        mt-1
+                                        text-sm
+                                        font-medium
+                                        text-blue-600
+                                    "
+                                >
+                                    ADELINA KOST 2
+                                </p>
+
+
+                                <p
+                                    className="
                                         mt-2
                                         text-sm
                                         leading-6
@@ -774,8 +697,7 @@ function LandingPage() {
                                     "
                                 >
 
-                                    Pilihan kamar dari bangunan kedua
-                                    ADELINA KOST.
+                                    Pilihan kamar dari ADELINA KOST 2
 
                                 </p>
 
@@ -783,7 +705,7 @@ function LandingPage() {
 
 
                             <Link
-                                to="/kamar"
+                                to="/kamar?buildingId=2"
                                 className="
                                     mt-6
                                     inline-flex
@@ -893,13 +815,11 @@ function LandingPage() {
                             description="Tempat tidur untuk kenyamanan penghuni."
                         />
 
-
                         <Facility
                             icon={<Shirt size={20} />}
                             title="Lemari"
                             description="Lemari untuk menyimpan pakaian dan barang pribadi."
                         />
-
 
                         <Facility
                             icon={<Wind size={20} />}
@@ -907,13 +827,11 @@ function LandingPage() {
                             description="Kipas angin untuk membantu menjaga sirkulasi udara."
                         />
 
-
                         <Facility
                             icon={<ShieldCheck size={20} />}
                             title="Kamar Mandi"
                             description="Kamar mandi pribadi untuk kebutuhan penghuni."
                         />
-
 
                         <Facility
                             icon={<Wifi size={20} />}
@@ -921,20 +839,17 @@ function LandingPage() {
                             description="Internet untuk kebutuhan sehari-hari."
                         />
 
-
                         <Facility
                             icon={<CookingPot size={20} />}
                             title="Dapur Umum"
                             description="Area dapur umum yang dapat digunakan penghuni."
                         />
 
-
                         <Facility
                             icon={<Shirt size={20} />}
                             title="Area Jemuran"
                             description="Area jemuran untuk kebutuhan penghuni."
                         />
-
 
                         <Facility
                             icon={<Car size={20} />}
@@ -961,17 +876,16 @@ function LandingPage() {
                 <div
                     className="
                         mx-auto
-                        grid
                         max-w-7xl
-                        gap-10
                         px-4
                         sm:px-6
-                        lg:grid-cols-2
                         lg:px-8
                     "
                 >
 
-                    <div>
+                    {/* HEADER */}
+
+                    <div className="max-w-3xl">
 
                         <p className="text-sm font-semibold text-blue-600">
                             Lokasi
@@ -987,7 +901,7 @@ function LandingPage() {
                                 text-slate-900
                             "
                         >
-                            Tinggal di lokasi yang strategis
+                            Dua lokasi untuk pilihanmu
                         </h2>
 
 
@@ -1001,47 +915,140 @@ function LandingPage() {
                             "
                         >
 
-                            ADELINA KOST berada di Jalan Srikandi,
-                            Pekanbaru, dengan akses yang mudah
-                            menuju berbagai fasilitas di sekitar kota.
+                            ADELINA KOST memiliki dua bangunan
+                            dengan lokasi yang berbeda. Pilih lokasi
+                            bangunan yang paling sesuai dengan
+                            kebutuhanmu.
 
                         </p>
 
+                    </div>
 
-                        <div className="mt-6 space-y-4">
 
-                            <div className="flex gap-3">
+                    {/* LOCATION CARDS */}
 
-                                <div
+                    <div
+                        className="
+                            mt-10
+                            grid
+                            gap-8
+                            lg:grid-cols-2
+                        "
+                    >
+
+                        {/* =================================================
+                            BANGUNAN LAMA
+                        ================================================= */}
+
+                        <div
+                            className="
+                                rounded-3xl
+                                border
+                                border-slate-200
+                                bg-white
+                                p-7
+                                shadow-sm
+                                sm:p-8
+                            "
+                        >
+
+                            <div
+                                className="
+                                    flex
+                                    h-12
+                                    w-12
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-blue-50
+                                "
+                            >
+
+                                <MapPin
+                                    size={23}
+                                    className="text-blue-600"
+                                />
+
+                            </div>
+
+
+                            <p
+                                className="
+                                    mt-6
+                                    text-sm
+                                    font-semibold
+                                    uppercase
+                                    tracking-wider
+                                    text-blue-600
+                                "
+                            >
+                                Bangunan 1
+                            </p>
+
+
+                            <h3
+                                className="
+                                    mt-2
+                                    text-2xl
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
+                                ADELINA KOST 1
+                            </h3>
+
+
+                            <p
+                                className="
+                                    mt-4
+                                    text-sm
+                                    leading-6
+                                    text-slate-600
+                                "
+                            >
+
+
+
+                            </p>
+
+
+                            <div
+                                className="
+                                    mt-6
+                                    flex
+                                    items-start
+                                    gap-3
+                                    rounded-2xl
+                                    border
+                                    border-slate-100
+                                    bg-slate-50
+                                    p-4
+                                "
+                            >
+
+                                <NavigationIcon
+                                    size={20}
                                     className="
-                                        flex
-                                        h-10
-                                        w-10
+                                        mt-0.5
                                         shrink-0
-                                        items-center
-                                        justify-center
-                                        rounded-xl
-                                        bg-blue-50
+                                        text-blue-600
                                     "
-                                >
-
-                                    <MapPin
-                                        size={18}
-                                        className="text-blue-600"
-                                    />
-
-                                </div>
+                                />
 
 
                                 <div>
 
                                     <p
                                         className="
-                                            font-semibold
-                                            text-slate-800
+                                            mt-1
+                                            text-sm
+                                            leading-6
+                                            text-slate-500
                                         "
                                     >
-                                        Jalan Srikandi
+                                        JALAN SRIKANDI KOMPLEK WADYA GRAHA 1 BLOK MAWAR NO.41
+                                        <br />
+                                        Pekanbaru, Riau
                                     </p>
 
 
@@ -1049,10 +1056,14 @@ function LandingPage() {
                                         className="
                                             mt-1
                                             text-sm
+                                            leading-6
                                             text-slate-500
                                         "
                                     >
-                                        Pekanbaru, Riau
+
+                                        Lihat lokasi lengkap
+                                        melalui Google Maps.
+
                                     </p>
 
                                 </div>
@@ -1060,15 +1071,12 @@ function LandingPage() {
                             </div>
 
 
-                            {/* =================================================
-                                BUTTON MAPS
-                            ================================================= */}
-
                             <a
-                                href={GOOGLE_MAPS_URL}
+                                href={GOOGLE_MAPS_BANGUNAN_LAMA}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="
+                                    mt-6
                                     inline-flex
                                     items-center
                                     gap-2
@@ -1095,83 +1103,169 @@ function LandingPage() {
 
                         </div>
 
-                    </div>
 
+                        {/* =================================================
+                            BANGUNAN BARU
+                        ================================================= */}
 
-                    {/* =================================================
-                        LOCATION CARD
-                    ================================================= */}
+                        <div
+                            className="
+                                rounded-3xl
+                                border
+                                border-slate-200
+                                bg-white
+                                p-7
+                                shadow-sm
+                                sm:p-8
+                            "
+                        >
 
-                    <div
-                        className="
-                            flex
-                            min-h-[320px]
-                            items-center
-                            justify-center
-                            rounded-3xl
-                            border
-                            border-slate-200
-                            bg-slate-100
-                        "
-                    >
-
-                        <div className="text-center">
-
-                            <MapPin
-                                size={40}
-                                className="mx-auto text-slate-400"
-                            />
-
-
-                            <p
+                            <div
                                 className="
-                                    mt-3
-                                    font-semibold
-                                    text-slate-700
+                                    flex
+                                    h-12
+                                    w-12
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-blue-50
                                 "
                             >
-                                Lokasi ADELINA KOST
-                            </p>
+
+                                <MapPin
+                                    size={23}
+                                    className="text-blue-600"
+                                />
+
+                            </div>
 
 
                             <p
                                 className="
-                                    mt-1
+                                    mt-6
                                     text-sm
-                                    text-slate-500
+                                    font-semibold
+                                    uppercase
+                                    tracking-wider
+                                    text-blue-600
                                 "
                             >
-                                Jalan Srikandi, Pekanbaru
+                                Bangunan 2
                             </p>
+
+
+                            <h3
+                                className="
+                                    mt-2
+                                    text-2xl
+                                    font-bold
+                                    text-slate-900
+                                "
+                            >
+                                ADELINA KOST 2
+                            </h3>
+
+
+                            <p
+                                className="
+                                    mt-4
+                                    text-sm
+                                    leading-6
+                                    text-slate-600
+                                "
+                            >
+
+
+
+                            </p>
+
+
+                            <div
+                                className="
+                                    mt-6
+                                    flex
+                                    items-start
+                                    gap-3
+                                    rounded-2xl
+                                    border
+                                    border-slate-100
+                                    bg-slate-50
+                                    p-4
+                                "
+                            >
+
+                                <NavigationIcon
+                                    size={20}
+                                    className="
+                                        mt-0.5
+                                        shrink-0
+                                        text-blue-600
+                                    "
+                                />
+
+
+                                <div>
+
+                                    <p
+                                        className="
+                                            mt-1
+                                            text-sm
+                                            leading-6
+                                            text-slate-500
+                                        "
+                                    >
+                                        JALAN SRIKANDI KOMPLEK WADYA GRAHA 1 BLOK MAWAR NO.83
+                                        <br />
+                                        Pekanbaru, Riau
+                                    </p>
+
+
+                                    <p
+                                        className="
+                                            mt-1
+                                            text-sm
+                                            leading-6
+                                            text-slate-500
+                                        "
+                                    >
+
+                                        Lihat lokasi lengkap
+                                        melalui Google Maps.
+
+                                    </p>
+
+                                </div>
+
+                            </div>
 
 
                             <a
-                                href={GOOGLE_MAPS_URL}
+                                href={GOOGLE_MAPS_BANGUNAN_BARU}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="
-                                    mt-5
+                                    mt-6
                                     inline-flex
                                     items-center
                                     gap-2
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    px-4
-                                    py-2.5
+                                    bg-blue-600
+                                    px-5
+                                    py-3
                                     text-sm
                                     font-semibold
-                                    text-blue-600
+                                    text-white
                                     shadow-sm
                                     transition
-                                    hover:bg-slate-50
+                                    hover:bg-blue-700
                                 "
                             >
 
-                                <MapPin size={16} />
+                                <MapPin size={17} />
 
-                                Lihat lokasi
+                                Buka di Google Maps
+
+                                <ArrowRight size={16} />
 
                             </a>
 
@@ -1272,14 +1366,14 @@ function LandingPage() {
 
         </div>
 
-    )
+    );
 
 }
 
 
-/* =========================================================
-   FEATURE ITEM
-========================================================= */
+// =========================================================
+// FEATURE ITEM
+// =========================================================
 
 function FeatureItem({ children }) {
 
@@ -1304,14 +1398,14 @@ function FeatureItem({ children }) {
 
         </div>
 
-    )
+    );
 
 }
 
 
-/* =========================================================
-   FACILITY COMPONENT
-========================================================= */
+// =========================================================
+// FACILITY COMPONENT
+// =========================================================
 
 function Facility({
     icon,
@@ -1377,9 +1471,9 @@ function Facility({
 
         </div>
 
-    )
+    );
 
 }
 
 
-export default LandingPage
+export default LandingPage;

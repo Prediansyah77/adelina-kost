@@ -26,7 +26,10 @@ import {
     createTenant,
     updateTenant,
     deleteTenant,
+
 } from '../services/tenantService'
+
+
 
 import {
     getKtp,
@@ -35,7 +38,10 @@ import {
 } from "../services/tenantDocumentService";
 
 import { getRooms } from '../services/roomService'
-import { getContracts } from '../services/contractService'
+import {
+    getContracts,
+    processMoveOut
+} from '../services/contractService'
 
 
 // =========================================================
@@ -43,6 +49,7 @@ import { getContracts } from '../services/contractService'
 // =========================================================
 
 function Tenants() {
+    console.log("TENANTS COMPONENT JALAN");
 
     // =====================================================
     // STATE
@@ -77,6 +84,9 @@ function Tenants() {
     const [contractList, setContractList] =
         useState([])
 
+    const [showMoveOutModal, setShowMoveOutModal] =
+        useState(false)
+
     const [selectedTenant, setSelectedTenant] =
         useState(null)
 
@@ -109,6 +119,7 @@ function Tenants() {
 
     const [loading, setLoading] =
         useState(true)
+    console.log("LOADING:", loading);
 
     const [saving, setSaving] =
         useState(false)
@@ -1785,6 +1796,7 @@ function Tenants() {
     }
 
 
+
     // =====================================================
     // DELETE TENANT
     // =====================================================
@@ -1946,14 +1958,62 @@ function Tenants() {
 
 
         // =================================================
-        // UNTUK SEKARANG MASIH SESUAI IMPLEMENTASI LAMA
+        // PROSES PENGHUNI KELUAR
         // =================================================
 
-        alert(
-            'Fitur penghuni keluar akan kita hubungkan ke modul Kontrak pada tahap berikutnya.'
-        )
+        try {
+
+            setSaving(true)
+
+            await processMoveOut(
+                activeContract.id,
+                moveOutForm.moveOutDate
+            )
+
+            alert(
+                'Penghuni berhasil diproses keluar.'
+            )
+
+            // Refresh data penghuni
+            const tenantResult =
+                await getTenants()
+
+            setTenantList(
+                tenantResult?.data || []
+            )
+
+            // Refresh data kontrak
+            const contractResult =
+                await getContracts()
+
+            setContractList(
+                contractResult?.data || []
+            )
+
+            // Tutup modal
+            setShowMoveOutModal(false)
+
+        } catch (error) {
+
+            console.error(
+                'Move Out Error:',
+                error
+            )
+
+            alert(
+                error?.message ||
+                'Gagal memproses penghuni keluar.'
+            )
+
+        } finally {
+
+            setSaving(false)
+
+        }
 
     }
+
+
 
 
     // =====================================================
@@ -4393,351 +4453,351 @@ function Tenants() {
 
     )
 
-}
 
 
-// =========================================================
-// SUMMARY CARD
-// =========================================================
 
-function SummaryCard({
-    title,
-    value,
-    valueClass = 'text-slate-800',
-    icon = <Users size={21} />,
-    iconClass = 'bg-slate-100 text-slate-600',
-}) {
+    // =========================================================
+    // SUMMARY CARD
+    // =========================================================
 
-    return (
+    function SummaryCard({
+        title,
+        value,
+        valueClass = 'text-slate-800',
+        icon = <Users size={21} />,
+        iconClass = 'bg-slate-100 text-slate-600',
+    }) {
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        return (
 
-            <div className="flex items-center justify-between gap-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
 
-                <div>
+                <div className="flex items-center justify-between gap-4">
 
-                    <p className="text-sm text-slate-500">
-                        {title}
-                    </p>
+                    <div>
+
+                        <p className="text-sm text-slate-500">
+                            {title}
+                        </p>
 
 
-                    <p
-                        className={`mt-1 text-2xl font-bold ${valueClass}`}
+                        <p
+                            className={`mt-1 text-2xl font-bold ${valueClass}`}
+                        >
+                            {value}
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
                     >
-                        {value}
-                    </p>
+                        {icon}
+                    </div>
 
-                </div>
-
-
-                <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
-                >
-                    {icon}
                 </div>
 
             </div>
 
-        </div>
+        )
 
-    )
-
-}
+    }
 
 
-// =========================================================
-// INFO BOX
-// =========================================================
+    // =========================================================
+    // INFO BOX
+    // =========================================================
 
-function InfoBox({
-    label,
-    value,
-}) {
+    function InfoBox({
+        label,
+        value,
+    }) {
 
-    return (
+        return (
 
-        <div className="rounded-xl bg-white/70 p-3">
-
-            <p className="text-xs text-slate-400">
-                {label}
-            </p>
-
-
-            <p className="mt-1 text-sm font-medium text-slate-700">
-                {value}
-            </p>
-
-        </div>
-
-    )
-
-}
-
-
-// =========================================================
-// DETAIL ITEM
-// =========================================================
-
-function DetailItem({
-    icon,
-    label,
-    value,
-}) {
-
-    return (
-
-        <div className="flex gap-3">
-
-            <div className="mt-0.5 text-slate-400">
-                {icon}
-            </div>
-
-
-            <div className="min-w-0">
+            <div className="rounded-xl bg-white/70 p-3">
 
                 <p className="text-xs text-slate-400">
                     {label}
                 </p>
 
 
-                <p className="mt-1 break-words text-sm font-medium text-slate-700">
+                <p className="mt-1 text-sm font-medium text-slate-700">
                     {value}
                 </p>
 
             </div>
 
-        </div>
+        )
 
-    )
-
-}
+    }
 
 
-// =========================================================
-// FORM INPUT
-// =========================================================
+    // =========================================================
+    // DETAIL ITEM
+    // =========================================================
 
-function FormInput({
-    label,
-    name,
-    type = 'text',
-    value,
-    onChange,
-    placeholder,
-    min,
-    max,
-}) {
+    function DetailItem({
+        icon,
+        label,
+        value,
+    }) {
 
-    return (
+        return (
 
-        <div>
+            <div className="flex gap-3">
 
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-                {label}
-            </label>
+                <div className="mt-0.5 text-slate-400">
+                    {icon}
+                </div>
 
 
-            <input
-                type={type}
-                name={name}
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                min={min}
-                max={max}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
+                <div className="min-w-0">
 
-        </div>
-
-    )
-
-}
+                    <p className="text-xs text-slate-400">
+                        {label}
+                    </p>
 
 
-// =========================================================
-// SELECT INPUT
-// =========================================================
+                    <p className="mt-1 break-words text-sm font-medium text-slate-700">
+                        {value}
+                    </p>
 
-function SelectInput({
-    label,
-    name,
-    value,
-    onChange,
-    children,
-}) {
-
-    return (
-
-        <div>
-
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-                {label}
-            </label>
-
-
-            <select
-                name={name}
-                value={value}
-                onChange={onChange}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-
-                {children}
-
-            </select>
-
-        </div>
-
-    )
-
-}
-
-
-// =========================================================
-// TEXTAREA
-// =========================================================
-
-function TextAreaInput({
-    label,
-    name,
-    value,
-    onChange,
-    placeholder,
-}) {
-
-    return (
-
-        <div>
-
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-                {label}
-            </label>
-
-
-            <textarea
-                name={name}
-                value={value}
-                onChange={onChange}
-                rows="3"
-                placeholder={placeholder}
-                className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
-
-        </div>
-
-    )
-
-}
-
-
-// =========================================================
-// MODAL OVERLAY
-// =========================================================
-
-function ModalOverlay({
-    children,
-}) {
-
-    return (
-
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]">
-
-            {children}
-
-        </div>
-
-    )
-
-}
-
-
-// =========================================================
-// MODAL HEADER
-// =========================================================
-
-function ModalHeader({
-    title,
-    subtitle,
-    onClose,
-}) {
-
-    return (
-
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white p-5">
-
-            <div>
-
-                <h2 className="text-lg font-semibold text-slate-800">
-                    {title}
-                </h2>
-
-
-                <p className="mt-1 text-xs text-slate-500">
-                    {subtitle}
-                </p>
+                </div>
 
             </div>
 
+        )
 
-            <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-            >
+    }
 
-                <X
-                    size={20}
+
+    // =========================================================
+    // FORM INPUT
+    // =========================================================
+
+    function FormInput({
+        label,
+        name,
+        type = 'text',
+        value,
+        onChange,
+        placeholder,
+        min,
+        max,
+    }) {
+
+        return (
+
+            <div>
+
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                    {label}
+                </label>
+
+
+                <input
+                    type={type}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    min={min}
+                    max={max}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
 
-            </button>
+            </div>
 
-        </div>
+        )
 
-    )
+    }
 
+
+    // =========================================================
+    // SELECT INPUT
+    // =========================================================
+
+    function SelectInput({
+        label,
+        name,
+        value,
+        onChange,
+        children,
+    }) {
+
+        return (
+
+            <div>
+
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                    {label}
+                </label>
+
+
+                <select
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+
+                    {children}
+
+                </select>
+
+            </div>
+
+        )
+
+    }
+
+
+    // =========================================================
+    // TEXTAREA
+    // =========================================================
+
+    function TextAreaInput({
+        label,
+        name,
+        value,
+        onChange,
+        placeholder,
+    }) {
+
+        return (
+
+            <div>
+
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                    {label}
+                </label>
+
+
+                <textarea
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    rows="3"
+                    placeholder={placeholder}
+                    className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+
+            </div>
+
+        )
+
+    }
+
+
+    // =========================================================
+    // MODAL OVERLAY
+    // =========================================================
+
+    function ModalOverlay({
+        children,
+    }) {
+
+        return (
+
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]">
+
+                {children}
+
+            </div>
+
+        )
+
+    }
+
+
+    // =========================================================
+    // MODAL HEADER
+    // =========================================================
+
+    function ModalHeader({
+        title,
+        subtitle,
+        onClose,
+    }) {
+
+        return (
+
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white p-5">
+
+                <div>
+
+                    <h2 className="text-lg font-semibold text-slate-800">
+                        {title}
+                    </h2>
+
+
+                    <p className="mt-1 text-xs text-slate-500">
+                        {subtitle}
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                >
+
+                    <X
+                        size={20}
+                    />
+
+                </button>
+
+            </div>
+
+        )
+
+    }
+
+
+    // =========================================================
+    // MODAL FOOTER
+    // =========================================================
+
+    function ModalFooter({
+        onCancel,
+        submitText,
+        disabled = false,
+    }) {
+
+        return (
+
+            <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    disabled={disabled}
+                    className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    Batal
+                </button>
+
+
+                <button
+                    type="submit"
+                    disabled={disabled}
+                    className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+
+                    {submitText}
+
+                </button>
+
+            </div>
+
+        )
+
+    }
 }
-
-
-// =========================================================
-// MODAL FOOTER
-// =========================================================
-
-function ModalFooter({
-    onCancel,
-    submitText,
-    disabled = false,
-}) {
-
-    return (
-
-        <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
-
-            <button
-                type="button"
-                onClick={onCancel}
-                disabled={disabled}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-                Batal
-            </button>
-
-
-            <button
-                type="submit"
-                disabled={disabled}
-                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-
-                {submitText}
-
-            </button>
-
-        </div>
-
-    )
-
-}
-
-
+console.log("TENANTS SELESAI");
 export default Tenants

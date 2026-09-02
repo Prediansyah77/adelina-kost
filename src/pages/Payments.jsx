@@ -9,7 +9,8 @@ import {
     getBillsForPayment,
     verifyPayment,
     rejectPayment,
-    verifyBookingPayment
+    verifyBookingPayment,
+    verifyFullPayment
 } from "../services/paymentService";
 
 import jsPDF from "jspdf";
@@ -1259,22 +1260,40 @@ const Payments = () => {
         //
         // =====================================================
 
-        const isBookingPayment =
+        const hasBooking =
             payment.booking_id !== null &&
             payment.booking_id !== undefined &&
-            payment.booking_id !== "" &&
-            (
-                payment.bill_id === null ||
-                payment.bill_id === undefined ||
-                payment.bill_id === ""
-            );
+            payment.booking_id !== "";
+
+        const hasBill =
+            payment.bill_id !== null &&
+            payment.bill_id !== undefined &&
+            payment.bill_id !== "";
+
+        const bookingDays =
+            Number(payment.booking_days || 0);
+
+        const isFullPayment =
+            hasBooking &&
+            !hasBill &&
+            bookingDays === 30;
+
+        const isBookingPayment =
+            hasBooking &&
+            !hasBill &&
+            bookingDays >= 1 &&
+            bookingDays <= 7;
+
 
         console.log("PAYMENT CHECK:", {
             id: payment.id,
             amount: payment.amount,
             booking_id: payment.booking_id,
             bill_id: payment.bill_id,
-            isBookingPayment
+            booking_days: payment.booking_days,
+            notes: payment.notes,
+            isBookingPayment,
+            isFullPayment
         });
 
 
@@ -1306,14 +1325,24 @@ const Payments = () => {
 
             let response;
 
+            if (isFullPayment) {
 
-            if (isBookingPayment) {
+                console.log(
+                    "VERIFY FULL PAYMENT:",
+                    payment.id
+                );
+
+                response =
+                    await verifyFullPayment(
+                        payment.id
+                    );
+
+            } else if (isBookingPayment) {
 
                 console.log(
                     "VERIFY BOOKING PAYMENT:",
                     payment.id
                 );
-
 
                 response =
                     await verifyBookingPayment(
@@ -1326,7 +1355,6 @@ const Payments = () => {
                     "VERIFY BILL PAYMENT:",
                     payment.id
                 );
-
 
                 response =
                     await verifyPayment(
@@ -1627,10 +1655,13 @@ const Payments = () => {
 
 
             const paidCount =
-                verifiedPayments.filter(
+                verifiedPayments.length;
+
+            const pendingCount =
+                filteredPayments.filter(
                     payment =>
-                        payment.bill_status ===
-                        "paid"
+                        String(payment.status || "").toLowerCase() ===
+                        "pending"
                 ).length;
 
 
@@ -1654,6 +1685,8 @@ const Payments = () => {
                 transfer,
 
                 paidCount,
+
+                pendingCount,
 
                 unpaidCount
 
@@ -3657,6 +3690,15 @@ const Payments = () => {
 
                             </div>
 
+                            <div className="rounded-xl bg-amber-50 p-4">
+                                <p className="text-xs font-medium text-amber-600">
+                                    Menunggu Verifikasi
+                                </p>
+                                <p className="mt-2 text-lg font-bold text-amber-800">
+                                    {recapData.pendingCount}
+                                </p>
+                            </div>
+
                         </div>
 
                     </div>
@@ -4040,11 +4082,9 @@ const Payments = () => {
                                                             ? "Menunggu Verifikasi"
                                                             : isRejected
                                                                 ? "Ditolak"
-                                                                : isVerified && payment.bill_status === "paid"
+                                                                : isVerified
                                                                     ? "Lunas"
-                                                                    : isVerified
-                                                                        ? "Terverifikasi"
-                                                                        : "Belum Diproses";
+                                                                    : "Belum Diproses";
 
                                                     return (
                                                         <span

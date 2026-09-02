@@ -1001,7 +1001,9 @@ function TenantBookingPayment() {
 
                     const response =
                         await fetch(
-                            "http://localhost:5000/api/payments/booking",
+                            isRemainingPayment
+                                ? "http://localhost:5000/api/payments/booking-remaining"
+                                : "http://localhost:5000/api/payments/booking",
                             {
                                 method: "POST",
 
@@ -1225,7 +1227,9 @@ function TenantBookingPayment() {
 
                 const response =
                     await fetch(
-                        "http://localhost:5000/api/payments/booking",
+                        isRemainingPayment
+                            ? "http://localhost:5000/api/payments/booking-remaining"
+                            : "http://localhost:5000/api/payments/booking",
                         {
                             method: "POST",
 

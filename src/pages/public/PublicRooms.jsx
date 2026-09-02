@@ -1,11 +1,32 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getPublicRooms } from "../../services/roomService";
 
 function PublicRooms() {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    const [searchParams] = useSearchParams();
+    const buildingId = searchParams.get("buildingId");
+
+
+    // =====================================================
+    // NAMA BANGUNAN
+    // =====================================================
+
+    const getBuildingDisplayName = (id) => {
+        if (Number(id) === 1) {
+            return "ADELINA KOST 1";
+        }
+
+        if (Number(id) === 2) {
+            return "ADELINA KOST 2";
+        }
+
+        return "ADELINA KOST";
+    };
+
 
     // =====================================================
     // AMBIL DATA KAMAR
@@ -54,6 +75,35 @@ function PublicRooms() {
 
         loadRooms();
     }, []);
+
+
+    // =====================================================
+    // FILTER BERDASARKAN BANGUNAN
+    // =====================================================
+
+    const filteredRooms = (buildingId
+        ? rooms.filter(
+            (room) =>
+                Number(
+                    room.building_id ??
+                    room.buildingId
+                ) === Number(buildingId)
+        )
+        : rooms
+    ).sort(
+        (a, b) =>
+            Number(a.room_number) -
+            Number(b.room_number)
+    );
+
+
+    // =====================================================
+    // NAMA BANGUNAN YANG DITAMPILKAN
+    // =====================================================
+
+    const selectedBuildingName = buildingId
+        ? getBuildingDisplayName(buildingId)
+        : null;
 
 
     // =====================================================
@@ -202,7 +252,9 @@ function PublicRooms() {
                         </p>
 
                         <button
-                            onClick={() => window.location.reload()}
+                            onClick={() =>
+                                window.location.reload()
+                            }
                             className="
                                 mt-6
                                 rounded-xl
@@ -279,6 +331,7 @@ function PublicRooms() {
                                 text-blue-600
                             "
                         >
+
                             <span>
                                 🏠
                             </span>
@@ -302,10 +355,17 @@ function PublicRooms() {
                                 sm:text-5xl
                             "
                         >
-                            Pilih Kamar
-                            <span className="text-blue-600">
-                                {" "}yang Sesuai
-                            </span>
+
+                            {selectedBuildingName
+                                ? selectedBuildingName
+                                : "Pilih Kamar"}
+
+                            {!selectedBuildingName && (
+                                <span className="text-blue-600">
+                                    {" "}yang Sesuai
+                                </span>
+                            )}
+
                         </h1>
 
 
@@ -321,11 +381,11 @@ function PublicRooms() {
                                 sm:text-lg
                             "
                         >
-                            Temukan kamar kos yang nyaman
-                            dan sesuai kebutuhanmu di
-                            ADELINA KOST. Informasi kamar
-                            diperbarui berdasarkan data
-                            terbaru.
+
+                            {selectedBuildingName
+                                ? `Temukan kamar yang tersedia di ${selectedBuildingName}.`
+                                : "Temukan kamar kos yang nyaman dan sesuai kebutuhanmu di ADELINA KOST. Informasi kamar diperbarui berdasarkan data terbaru."}
+
                         </p>
 
 
@@ -339,6 +399,8 @@ function PublicRooms() {
                                 gap-3
                             "
                         >
+
+                            {/* TOTAL */}
 
                             <div
                                 className="
@@ -363,11 +425,13 @@ function PublicRooms() {
                                         text-slate-900
                                     "
                                 >
-                                    {rooms.length}
+                                    {filteredRooms.length}
                                 </p>
 
                             </div>
 
+
+                            {/* TERSEDIA */}
 
                             <div
                                 className="
@@ -392,13 +456,15 @@ function PublicRooms() {
                                         text-emerald-700
                                     "
                                 >
+
                                     {
-                                        rooms.filter(
+                                        filteredRooms.filter(
                                             (room) =>
                                                 room.status ===
                                                 "available"
                                         ).length
                                     }
+
                                 </p>
 
                             </div>
@@ -475,7 +541,7 @@ function PublicRooms() {
                             text-slate-400
                         "
                     >
-                        {rooms.length} kamar
+                        {filteredRooms.length} kamar
                     </p>
 
                 </div>
@@ -485,7 +551,7 @@ function PublicRooms() {
                     EMPTY STATE
                 ================================================= */}
 
-                {rooms.length === 0 ? (
+                {filteredRooms.length === 0 ? (
 
                     <div
                         className="
@@ -524,8 +590,11 @@ function PublicRooms() {
                                 text-slate-500
                             "
                         >
-                            Data kamar belum tersedia
-                            untuk saat ini.
+
+                            {buildingId
+                                ? "Belum ada kamar pada bangunan ini."
+                                : "Data kamar belum tersedia untuk saat ini."}
+
                         </p>
 
                     </div>
@@ -545,7 +614,7 @@ function PublicRooms() {
                         "
                     >
 
-                        {rooms.map((room) => (
+                        {filteredRooms.map((room) => (
 
                             <article
                                 key={room.id}
@@ -681,8 +750,10 @@ function PublicRooms() {
                                             text-blue-600
                                         "
                                     >
-                                        {room.building_name ||
-                                            "ADELINA KOST"}
+                                        {getBuildingDisplayName(
+                                            room.building_id ??
+                                            room.buildingId
+                                        )}
                                     </p>
 
 
@@ -904,6 +975,5 @@ function PublicRooms() {
         </div>
     );
 }
-
 
 export default PublicRooms;

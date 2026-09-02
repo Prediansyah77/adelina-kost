@@ -243,7 +243,7 @@ export const getBillsForPayment = async () => {
 
 
 // =====================================================
-// VERIFY PEMBAYARAN
+// VERIFY PEMBAYARAN BIASA
 //
 // Endpoint:
 // PATCH /api/payments/:id/verify
@@ -273,6 +273,20 @@ export const verifyPayment = async (
     return response.data;
 };
 
+
+// =====================================================
+// VERIFY PEMBAYARAN BOOKING / DP
+//
+// Endpoint:
+// PATCH /api/payments/booking/:id/verify
+//
+// Dipakai untuk:
+// - DP booking
+// - pembayaran sisa booking
+//
+// BUKAN untuk full payment.
+// =====================================================
+
 export const verifyBookingPayment = async (
     id
 ) => {
@@ -280,6 +294,46 @@ export const verifyBookingPayment = async (
     const response =
         await api.patch(
             `/payments/booking/${id}/verify`
+        );
+
+    return response.data;
+};
+
+
+// =====================================================
+// VERIFY FULL PAYMENT
+//
+// Endpoint:
+// PATCH /api/payments/full/:id/verify
+//
+// Dipakai khusus untuk pembayaran penuh kamar.
+//
+// Alur:
+//
+// pending
+//    ↓
+// admin verifikasi
+//    ↓
+// payment = verified
+//    ↓
+// booking = approved
+//    ↓
+// tenant = aktif
+//    ↓
+// contract = aktif
+//    ↓
+// room = occupied
+//    ↓
+// tagihan bulan berikutnya dibuat
+// =====================================================
+
+export const verifyFullPayment = async (
+    id
+) => {
+
+    const response =
+        await api.patch(
+            `/payments/full/${id}/verify`
         );
 
     return response.data;

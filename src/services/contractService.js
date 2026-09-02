@@ -73,6 +73,21 @@ export async function getContractById(id) {
 
 
 // =====================================================
+// GET CONTRACT HISTORY
+// GET /api/contracts/history
+// =====================================================
+
+export async function getContractHistory() {
+    return await request(
+        `${API_URL}/history`,
+        {
+            method: 'GET',
+        }
+    )
+}
+
+
+// =====================================================
 // CREATE CONTRACT
 // POST /api/contracts
 // =====================================================
@@ -99,6 +114,37 @@ export async function updateContract(
         {
             method: 'PUT',
             body: JSON.stringify(contractData),
+        }
+    )
+}
+
+
+// =====================================================
+// PROCESS MOVE OUT
+// POST /api/contracts/:id/move-out
+//
+// Digunakan ketika penghuni keluar.
+//
+// Backend akan:
+// - kontrak active → completed
+// - tenant aktif → nonaktif
+// - kamar occupied → available
+//
+// Pembayaran dan tagihan TIDAK dihapus.
+// =====================================================
+
+export async function processMoveOut(
+    contractId,
+    moveOutDate
+) {
+    return await request(
+        `${API_URL}/${contractId}/move-out`,
+        {
+            method: 'POST',
+
+            body: JSON.stringify({
+                moveOutDate,
+            }),
         }
     )
 }

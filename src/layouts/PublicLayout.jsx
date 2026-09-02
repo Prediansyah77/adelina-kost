@@ -324,18 +324,7 @@ function PublicLayout({ children }) {
 
                         {/* KAMAR */}
 
-                        <Link
-                            to="/kamar"
-                            className="
-                                text-sm
-                                font-medium
-                                text-slate-600
-                                transition
-                                hover:text-blue-600
-                            "
-                        >
-                            Kamar
-                        </Link>
+
 
 
                         {/* FASILITAS */}
